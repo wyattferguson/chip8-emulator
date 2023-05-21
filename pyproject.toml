@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "chip8-emulator"
+version = "0.1.0"
+description = ""
+authors = ["wyattferguson <wyattf@gmail.com>"]
+readme = "README.md"
+packages = [{include = "chip8_emulator"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pygame = "^2.4.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
