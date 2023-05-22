@@ -46,7 +46,7 @@ class Chip(object):
 
         }
 
-        self.rom_file = "test_rom.ch8"
+        self.rom_file = "./roms/coin.ch8"
 
 
     def load_rom(self):
@@ -95,7 +95,7 @@ class Chip(object):
 
     def JMP_SUB(self):
         '''OBSOLETE: Jump to a machine code routine at addr.'''
-        self.PC = self.addr
+        pass
 
 
     def CLS(self):
