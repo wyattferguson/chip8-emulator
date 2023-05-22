@@ -1,27 +1,23 @@
-#import pygame as pg
+import pygame as pg
 
-DISPLAY_SCALER = 4
-FPS = 60
-
-SCREEN_WIDTH, SCREEN_HEIGHT = 64, 32
+from config import *
 
 
 class Chip(object):
     def __init__(self):
         self.PC = 0 # program counter
         self.I = 0  # locations register
-        self.VF = 0 # flag register
+        self.VF = REGISTERS - 1 # flag register
         self.SP = 0 # stack pointer
 
-        self.V =  bytearray([0] * 16) # general purpose registers
-        self.ram = bytearray([0] * 4096) # cpu memory
-        self.stack = [0] * 16
+        self.V = bytearray([0] * REGISTERS) # 16 general purpose registers
+        self.ram = bytearray([0] * MEMORY) # 4kb of memory
+        self.stack = [0] * REGISTERS
 
         self.delay_timer = 0
         self.sound_timer = 0
 
         self.op_code = 0 # current instruction
-
         self.addr = 0
         self.x = 0
         self.y = 0
@@ -29,10 +25,9 @@ class Chip(object):
         self.kk = 0
         self.lookup = 0
 
+        # primary instuction set
         self.code_lookup = {
-            0x0000: self.JMP_SUB,
-            0x00E0: self.CLS, # TODO
-            0x00EE: self.RET,
+            0x0000: self.EXTRAS,
             0x1000: self.JMP,
             0x2000: self.SUB,
             0x3000: self.SE_VX,
@@ -43,10 +38,28 @@ class Chip(object):
             0x9000: self.SNE_VX_VY,
             0xa000: self.LOAD_I,
             0xd000: self.DRAW, #TODO
+            0xf000: self.EXTRAS,
+        }
 
+        # misc sub instructions
+        self.extra_lookup = {
+            0x00E0: self.CLS,
+            0x00EE: self.RET,
+            0x0029: self.LOAD_F_VX,
+            0x0033: self.LOAD_BCD,
+            0x0065: self.LOAD_V0_VX,
         }
 
         self.rom_file = "./roms/coin.ch8"
+
+        pg.init()
+        pg.display.set_caption(f"Chip8 - {self.rom_file}")
+
+        self.screen_size = ( SCREEN_WIDTH * DISPLAY_SCALER, SCREEN_HEIGHT * DISPLAY_SCALER)
+        self.screen = pg.display.set_mode(self.screen_size)
+        self.clock = pg.time.Clock()
+        self.tick_speed = FPS
+        self.running = True
 
 
     def load_rom(self):
@@ -55,15 +68,27 @@ class Chip(object):
         rom_ptr = open(self.rom_file, 'rb')
         rom = rom_ptr.read()
 
-        self.PC = 0x200 # program start in memory
+        self.PC = PROGRAM_START # program start in memory
         self.ram[self.PC:len(rom)] = bytearray(rom) # copy rom to ram
         rom_ptr.close()
+
+
+    def screen_update(self):
+        # self.should_quit()
+        # for surf in self.surfs:
+        #     self.screen.blit(surf, (0, 0))
+        pg.display.update()
+        self.clock.tick(self.tick_speed)
 
     def run(self):
         self.load_rom()
 
-        while True:
+        while self.running:
             self.cycle()
+            self.screen_update()
+
+        pg.quit()
+
 
 
     def decode(self):
@@ -100,7 +125,7 @@ class Chip(object):
 
     def CLS(self):
         '''Clear the display.'''
-        pass
+        self.screen.fill(BLACK)
 
     def RET(self):
         '''Return from a subroutine.'''
@@ -154,6 +179,28 @@ class Chip(object):
     def ADD_VX(self):
         '''Set Vx = Vx + kk'''
         self.V[self.x] = (self.V[self.x] + self.kk) & 0xFF # get bytes
+
+
+    def EXTRAS(self):
+        self.extra_lookup[self.kk]()
+
+    def LOAD_V0_VX(self):
+        '''Read registers V0 through Vx from memory starting at location I.'''
+        for i in range(0,self.x+1):
+            self.ram[self.I + i] = self.V[i]
+            # print(i, self.V[i], self.I + i, self.ram[self.I + i])
+
+    def LOAD_F_VX(self):
+        '''Set I = location of sprite for digit Vx. All sprites are 5 bytes long'''
+        self.I = self.V[self.x] * 5
+
+    def LOAD_BCD(self):
+        '''Store BCD representation of Vx in memory locations I, I+1, and I+2.'''
+
+        bcd_value = '{:03d}'.format(self.V[self.x])
+        self.ram[self.I] = int(bcd_value[0])
+        self.ram[self.I + 1] = int(bcd_value[1])
+        self.ram[self.I + 2] = int(bcd_value[2])
 
 
     def vdebug(self, val):
