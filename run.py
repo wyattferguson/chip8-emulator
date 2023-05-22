@@ -1,5 +1,3 @@
-from ctypes import c_uint8 as ubyte
-
 #import pygame as pg
 
 DISPLAY_SCALER = 4
@@ -15,15 +13,14 @@ class Chip(object):
         self.VF = 0 # flag register
         self.SP = 0 # stack pointer
 
-        self.VX =  bytearray([0] * 16) # general purpose registers
-        self.ram = bytearray([0] * 4096)
+        self.V =  bytearray([0] * 16) # general purpose registers
+        self.ram = bytearray([0] * 4096) # cpu memory
         self.stack = [0] * 16
 
         self.delay_timer = 0
         self.sound_timer = 0
 
-        self.op_code = 0
-        self.op_name = ""
+        self.op_code = 0 # current instruction
 
         self.addr = 0
         self.x = 0
@@ -33,8 +30,20 @@ class Chip(object):
         self.lookup = 0
 
         self.code_lookup = {
+            0x0000: self.JMP_SUB,
+            0x00E0: self.CLS, # TODO
+            0x00EE: self.RET,
             0x1000: self.JMP,
+            0x2000: self.SUB,
+            0x3000: self.SE_VX,
+            0x4000: self.SNE_VX,
+            0x5000: self.SE_VX_VY,
             0x6000: self.LOAD_VX,
+            0x7000: self.ADD_VX,
+            0x9000: self.SNE_VX_VY,
+            0xa000: self.LOAD_I,
+            0xd000: self.DRAW, #TODO
+
         }
 
         self.rom_file = "test_rom.ch8"
@@ -47,15 +56,13 @@ class Chip(object):
         rom = rom_ptr.read()
 
         self.PC = 0x200 # program start in memory
-        # print(rom)
-        self.ram[self.PC:len(rom)] = bytearray(rom)
-        # print(self.ram)
+        self.ram[self.PC:len(rom)] = bytearray(rom) # copy rom to ram
         rom_ptr.close()
 
     def run(self):
         self.load_rom()
 
-        for i in range(10):
+        while True:
             self.cycle()
 
 
@@ -78,20 +85,75 @@ class Chip(object):
         try:
             self.code_lookup[self.lookup]()
         except Exception as e:
+            # stop on op code error
+            print(e)
             exit()
 
-
-        self.PC += 2
-
+        self.PC += 2 # move program counter to next instruction
 
 
+
+    def JMP_SUB(self):
+        '''OBSOLETE: Jump to a machine code routine at addr.'''
+        self.PC = self.addr
+
+
+    def CLS(self):
+        '''Clear the display.'''
+        pass
+
+    def RET(self):
+        '''Return from a subroutine.'''
+        self.SP -= 1
+        self.PC = self.stack[self.SP]
 
     def JMP(self):
+        ''' Move program counter to Addr'''
         self.PC = self.addr
         self.PC -= 2
 
     def LOAD_VX(self):
-        self.VX[self.x] = self.kk
+        ''' Set register X equal to kk'''
+        self.V[self.x] = self.kk
+
+    def LOAD_I(self):
+        self.I = self.addr
+
+    def DRAW(self):
+        ''' Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision.
+        '''
+        pass
+
+    def SE_VX(self):
+        ''' Skip next instruction if Vx = kk. '''
+        if self.V[self.x] == self.kk:
+            self.PC += 2
+
+    def SNE_VX(self):
+        ''' Skip next instruction if Vx != kk. '''
+        if self.V[self.x] != self.kk:
+            self.PC += 2
+
+    def SE_VX_VY(self):
+        '''Skip next instruction if Vx = Vy.'''
+        if self.V[self.x] == self.V[self.y]:
+            self.PC += 2
+
+    def SNE_VX_VY(self):
+        '''Skip next instruction if Vx != Vy.'''
+        if self.V[self.x] != self.V[self.y]:
+            self.PC += 2
+
+    def SUB(self):
+        '''Call subroutine at addr.'''
+        self.stack[self.SP] = self.PC
+        self.SP += 1
+        self.PC = self.addr
+        self.PC -= 2 # fix for cycle incrementing PC after
+
+    def ADD_VX(self):
+        '''Set Vx = Vx + kk'''
+        self.V[self.x] = (self.V[self.x] + self.kk) & 0xFF # get bytes
 
 
     def vdebug(self, val):
