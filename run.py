@@ -28,7 +28,7 @@ class Chip(object):
         self.kk = 0
         self.lookup = 0
 
-        # primary operations set
+        # primary instructions set
         self.code_lookup = {
             0x0000: self.EXTRAS,
             0x1000: self.JMP,
@@ -48,7 +48,7 @@ class Chip(object):
             0xf000: self.EXTRAS,
         }
 
-        # 0x800X specific operations
+        # 0x800X specific instructions
         self.logical_lookup = {
             0x0: self.SET_VX_VY,  # 8xy0
             0x1: self.OR_VX_VY,
@@ -74,7 +74,7 @@ class Chip(object):
         Fx85 - LD Vx, R
         '''
 
-        # 0x0/0xe/0xf operations
+        # 0x0/0xe/0xf & Super Chip-48 instructions
         self.extra_lookup = {
             0x0007: self.LOAD_VX_DT,
             0x000e: self.SKIP,  # TODO

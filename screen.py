@@ -1,15 +1,15 @@
 import pygame as pg
 
-from config import *
+from config import DISPLAY_SCALER, FPS, SCREEN_HEIGHT, SCREEN_WIDTH
 
 
 class ChipScreen():
 
     def __init__(self):
         pg.init()
-        pg.display.set_caption(f"Chip8 Emulator- {ROM_FILE}")
+        pg.display.set_caption("Chip8 Emulator")
 
-        self.screen_size = ( SCREEN_WIDTH * DISPLAY_SCALER, SCREEN_HEIGHT * DISPLAY_SCALER)
+        self.screen_size = (SCREEN_WIDTH * DISPLAY_SCALER, SCREEN_HEIGHT * DISPLAY_SCALER)
         self.screen = pg.display.set_mode(self.screen_size)
         self.clock = pg.time.Clock()
         self.tick_speed = FPS

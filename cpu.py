@@ -1,0 +1,1 @@
+from config import MEMORY, PROGRAM_START, REGISTERS

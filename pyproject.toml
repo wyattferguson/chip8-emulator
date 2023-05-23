@@ -14,3 +14,4 @@ pygame = "^2.4.0"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
