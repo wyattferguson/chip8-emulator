@@ -1,4 +1,4 @@
-from random import randbytes, randint
+from random import randint
 
 import pygame as pg
 
@@ -27,7 +27,7 @@ class Chip(object):
         self.kk = 0
         self.lookup = 0
 
-        # primary instuction set
+        # primary operations set
         self.code_lookup = {
             0x0000: self.EXTRAS,
             0x1000: self.JMP,
@@ -45,7 +45,7 @@ class Chip(object):
             0xf000: self.EXTRAS,
         }
 
-        # 0x8XXX specific operations
+        # 0x800X specific operations
         self.logical_lookup = {
             0x0: self.SET_VX_VY, # 8xy0
             0x1: self.OR_VX_VY,
@@ -58,7 +58,7 @@ class Chip(object):
             0xe: self.SHL_VX
         }
 
-        # misc sub instructions
+        # 0x00XX/0xf0XX operations
         self.extra_lookup = {
             0x0007: self.SET_VX_DT,
             0x0015: self.LOAD_DT,
@@ -73,7 +73,7 @@ class Chip(object):
             0x001e: self.ADD_I_VX
         }
 
-        self.rom_file = "./roms/tetris.ch8"
+        self.rom_file = ROM_FILE
 
         pg.init()
         pg.display.set_caption(f"Chip8 - {self.rom_file}")
