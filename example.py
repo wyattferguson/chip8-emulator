@@ -952,7 +952,7 @@ class chip8CPU(object):
 # TODO: move the drawing code - not related to the emulator architecture - to an external procedure
 # for easier reading and optimalization
 
-    def op_D_XYN(self):                       # Dxyn    DRAW
+    def op_D_XYNop_D_XYN(self):                       # Dxyn    DRAW
 
         X = self.V[self.X]
         Y = self.V[self.Y]
