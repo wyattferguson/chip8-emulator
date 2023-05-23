@@ -1,3 +1,5 @@
+from random import randbytes, randint
+
 import pygame as pg
 
 from config import *
@@ -34,23 +36,44 @@ class Chip(object):
             0x4000: self.SNE_VX,
             0x5000: self.SE_VX_VY,
             0x6000: self.LOAD_VX,
-            0x7000: self.ADD_VX,
+            0x7000: self.ADD_VX_KK,
+            0x8000: self.LOGICAL,
             0x9000: self.SNE_VX_VY,
             0xa000: self.LOAD_I,
+            0xc000: self.RND,
             0xd000: self.DRAW, #TODO
             0xf000: self.EXTRAS,
         }
 
-        # misc sub instructions
-        self.extra_lookup = {
-            0x00E0: self.CLS,
-            0x00EE: self.RET,
-            0x0029: self.LOAD_F_VX,
-            0x0033: self.LOAD_BCD,
-            0x0065: self.LOAD_V0_VX,
+        # 0x8XXX specific operations
+        self.logical_lookup = {
+            0x0: self.SET_VX_VY, # 8xy0
+            0x1: self.OR_VX_VY,
+            0x2: self.AND_VX_VY,
+            0x3: self.XOR_VX_VY,
+            0x4: self.ADD_VX_VY,
+            0x5: self.SUB_VX_VY,
+            0x6: self.SHR_VX,
+            0x7: self.SUBN_VX_VY,
+            0xe: self.SHL_VX
         }
 
-        self.rom_file = "./roms/coin.ch8"
+        # misc sub instructions
+        self.extra_lookup = {
+            0x0007: self.SET_VX_DT,
+            0x0015: self.LOAD_DT,
+            0x0018: self.LOAD_ST,
+            0x0029: self.LOAD_F_VX,
+            0x0030: self.LOAD_I_VX_EXT,
+            0x0033: self.LOAD_BCD,
+            0x0055: self.LOAD_I_VX,
+            0x0065: self.LOAD_VX_I,
+            0x00e0: self.CLS,
+            0x00ee: self.RET,
+            0x001e: self.ADD_I_VX
+        }
+
+        self.rom_file = "./roms/tetris.ch8"
 
         pg.init()
         pg.display.set_caption(f"Chip8 - {self.rom_file}")
@@ -75,8 +98,6 @@ class Chip(object):
 
     def screen_update(self):
         # self.should_quit()
-        # for surf in self.surfs:
-        #     self.screen.blit(surf, (0, 0))
         pg.display.update()
         self.clock.tick(self.tick_speed)
 
@@ -147,7 +168,25 @@ class Chip(object):
     def DRAW(self):
         ''' Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision.
         '''
-        pass
+
+        for y_index in range(self.n):
+            y_coord = self.y + y_index
+            y_coord = y_coord % SCREEN_HEIGHT
+
+            for x_index in range(8):
+                x_coord = self.x + x_index
+                x_coord = x_coord % SCREEN_WIDTH
+
+                x_base = x_coord * DISPLAY_SCALER
+                y_base = y_coord * DISPLAY_SCALER
+                pg.draw.rect(self.screen, WHITE, (x_base,y_base, DISPLAY_SCALER, DISPLAY_SCALER))
+
+
+
+    def RND(self):
+        '''Set Vx = random byte AND kk.'''
+        self.V[self.x] = randint(0, 255) & self.kk
+
 
     def SE_VX(self):
         ''' Skip next instruction if Vx = kk. '''
@@ -176,23 +215,94 @@ class Chip(object):
         self.PC = self.addr
         self.PC -= 2 # fix for cycle incrementing PC after
 
-    def ADD_VX(self):
+    def ADD_VX_KK(self):
         '''Set Vx = Vx + kk'''
         self.V[self.x] = (self.V[self.x] + self.kk) & 0xFF # get bytes
 
-
     def EXTRAS(self):
+        print("EXTRA ", self.kk, hex(self.lookup))
         self.extra_lookup[self.kk]()
 
-    def LOAD_V0_VX(self):
+    def LOGICAL(self):
+        print("LOGICAL ", self.n, hex(self.n))
+        self.logical_lookup[self.n]()
+
+    def OR_VX_VY(self):
+        '''Set Vx = Vx OR Vy.'''
+        self.V[self.x] = self.V[self.x] | self.V[self.y]
+
+    def AND_VX_VY(self):
+        '''Set Vx = Vx AND Vy.'''
+        self.V[self.x] = self.V[self.x] & self.V[self.y]
+
+    def XOR_VX_VY(self):
+        '''Set Vx = Vx XOR Vy.'''
+        self.V[self.x]  = self.V[self.x] ^ self.V[self.y]
+
+    def ADD_VX_VY(self):
+        '''Set Vx = Vx + Vy, set VF = carry.'''
+        value = self.V[self.x] + self.V[self.y]
+        self.V[self.VF] = 1 if value > 255 else 0 # set carry flag
+        self.V[self.x] = value & 0xFF
+
+    def SUB_VX_VY(self):
+        '''Set Vx = Vx - Vy, set VF = NOT borrow.'''
+        value = self.V[self.x] - self.V[self.y]
+        self.V[self.VF] = 1 if self.V[self.x] > self.V[self.y] else 0 # set carry flag
+        self.V[self.x]  = value & 0xFF
+
+    def SUBN_VX_VY(self):
+        '''Set Vx = Vy - Vx, set VF = NOT borrow.'''
+        value = self.V[self.y] - self.V[self.x]
+        self.V[self.VF] = 1 if self.V[self.y] > self.V[self.x] else 0 # set carry flag
+        self.V[self.x]  = value & 0xFF
+
+    def SHR_VX(self):
+        '''Set Vx = Vx SHR 1.'''
+        self.V[self.x] = self.V[self.x] >> 1
+
+    def SHL_VX(self):
+        '''Set Vx = Vx SHL 1.'''
+        self.V[self.x] = (self.V[self.x] << 1) & 0xFF
+
+    def LOAD_ST(self):
+        '''Set sound timer = Vx.'''
+        self.sound_timer = self.V[self.x]
+
+    def LOAD_DT(self):
+        '''Set delay timer = Vx.'''
+        self.delay_timer = self.V[self.x]
+
+    def LOAD_I_VX_EXT(self):
+        ''' Load I with the sprite indicated in the X register. All sprites are 10 bytes long'''
+        self.I = self.V[self.x] * 10
+
+    def SET_VX_VY(self):
+        '''Set Vx = Vy.'''
+        self.V[self.x] = self.V[self.y]
+
+    def ADD_I_VX(self):
+        '''Set I = I + Vx.'''
+        self.I = self.I + self.V[self.x]
+
+    def SET_VX_DT(self):
+        '''Set Vx = delay timer value.'''
+        self.V[self.x] = self.delay_timer
+
+    def LOAD_VX_I(self):
         '''Read registers V0 through Vx from memory starting at location I.'''
         for i in range(0,self.x+1):
-            self.ram[self.I + i] = self.V[i]
+            self.V[i] = self.ram[self.I + i]
             # print(i, self.V[i], self.I + i, self.ram[self.I + i])
 
     def LOAD_F_VX(self):
         '''Set I = location of sprite for digit Vx. All sprites are 5 bytes long'''
         self.I = self.V[self.x] * 5
+
+    def LOAD_I_VX(self):
+        '''Store registers V0 through Vx in memory starting at location I.'''
+        for i in range(0,self.x+1):
+            self.ram[self.I + i] = self.V[i]
 
     def LOAD_BCD(self):
         '''Store BCD representation of Vx in memory locations I, I+1, and I+2.'''
