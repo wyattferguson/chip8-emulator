@@ -1,8 +1,7 @@
 from random import randint
 
-import pygame as pg
-
-from config import *
+from config import DEBUG, MEMORY, PROGRAM_START, REGISTERS, ROM_FILE
+from screen import ChipScreen
 
 
 class Chip(object):
@@ -28,7 +27,7 @@ class Chip(object):
         self.kk = 0
         self.lookup = 0
 
-        # primary instructions set
+        # 0xX000 primary instructions set
         self.code_lookup = {
             0x0000: self.EXTRAS,
             0x1000: self.JMP,
@@ -50,7 +49,7 @@ class Chip(object):
 
         # 0x800X specific instructions
         self.logical_lookup = {
-            0x0: self.SET_VX_VY,  # 8xy0
+            0x0: self.SET_VX_VY,
             0x1: self.OR_VX_VY,
             0x2: self.AND_VX_VY,
             0x3: self.XOR_VX_VY,
@@ -94,14 +93,7 @@ class Chip(object):
 
         self.rom_file = ROM_FILE
 
-        pg.init()
-        pg.display.set_caption(f"Chip8 - {self.rom_file}")
-
-        self.screen_size = (SCREEN_WIDTH * DISPLAY_SCALER, SCREEN_HEIGHT * DISPLAY_SCALER)
-        self.screen = pg.display.set_mode(self.screen_size)
-        self.clock = pg.time.Clock()
-        self.tick_speed = FPS
-        self.running = True
+        self.screen = ChipScreen()
 
     def load_rom(self):
         print(f"Loading Rom - {self.rom_file}")
@@ -113,19 +105,13 @@ class Chip(object):
         self.ram[self.PC:len(rom)] = bytearray(rom)  # copy rom to ram
         rom_ptr.close()
 
-    def screen_update(self):
-        # self.should_quit()
-        pg.display.update()
-        self.clock.tick(self.tick_speed)
-
     def run(self):
         self.load_rom()
 
-        while self.running:
+        while True:
             self.cycle()
-            self.screen_update()
+            self.screen.update()
 
-        pg.quit()
 
     def decode(self):
         # All instructions are 2 bytes long and are stored most-significant-byte first
@@ -153,7 +139,7 @@ class Chip(object):
 
     def CLS(self):
         '''Clear the display.'''
-        self.screen.fill(BLACK)
+        self.screen.clear_screen()
         self.op_name = "CLS"
 
     def RET(self):
@@ -281,17 +267,19 @@ class Chip(object):
         set VF = collision.
         '''
 
-        for y_index in range(self.n):
-            y_coord = self.y + y_index
-            y_coord = y_coord % SCREEN_HEIGHT
+        x_start = self.V[self.x]
+        y_start = self.V[self.y]
 
-            for x_index in range(8):
-                x_coord = self.x + x_index
-                x_coord = x_coord % SCREEN_WIDTH
+        for byte_index in range(self.n):
+            row = (y_start + byte_index) % 32
+            sprite = self.ram[self.I + byte_index]
 
-                x_base = x_coord * DISPLAY_SCALER
-                y_base = y_coord * DISPLAY_SCALER
-                pg.draw.rect(self.screen, WHITE, (x_base, y_base, DISPLAY_SCALER, DISPLAY_SCALER))
+            for x_offset in range(8):
+                set_bit = sprite & (128 >> x_offset)
+                col = (x_start + x_offset) % 64
+
+                if set_bit:
+                    self.V[self.VF] = self.screen.flip(col,row) or self.V[self.VF]
 
         self.op_name = "DRW Vx, Vy, n"
 
@@ -369,11 +357,9 @@ class Chip(object):
     def LOGICAL(self):
         self.logical_lookup[self.n]()
 
-    def vdebug(self, val):
-        print(f"{val} {bin(val)} {hex(val)}")
-
     def debug(self):
-        print(f"""{self.PC} - {self.SP} - {hex(self.lookup)} -
+        if DEBUG:
+            print(f"""{self.PC} - {self.SP} - {hex(self.lookup)} -
               {self.op_code} {hex(self.op_code)} - {self.op_name}""")
 
 

@@ -1,6 +1,8 @@
+
 import pygame as pg
 
-from config import DISPLAY_SCALER, FPS, SCREEN_HEIGHT, SCREEN_WIDTH
+from config import (BLACK, DISPLAY_SCALER, FPS, SCREEN_HEIGHT, SCREEN_WIDTH,
+                    WHITE)
 
 
 class ChipScreen():
@@ -15,11 +17,30 @@ class ChipScreen():
         self.tick_speed = FPS
         self.running = True
 
-    def clear(self):
-        ''' Wipe current screen '''
-        pass
-
     def update(self):
         # self.should_quit()
         pg.display.update()
         self.clock.tick(self.tick_speed)
+
+    def clear_screen(self):
+        self.screen.fill(BLACK)
+
+    def flip(self,px,py):
+        color = self.screen.get_at((px * DISPLAY_SCALER, py * DISPLAY_SCALER))
+
+        if color == WHITE:
+            pg.draw.rect(
+                self.screen,
+                BLACK,
+                pg.Rect(px * DISPLAY_SCALER, py * DISPLAY_SCALER, DISPLAY_SCALER, DISPLAY_SCALER),
+            )
+            return True
+
+        else:
+            pg.draw.rect(
+                self.screen,
+                WHITE,
+                pg.Rect(px * DISPLAY_SCALER, py * DISPLAY_SCALER, DISPLAY_SCALER, DISPLAY_SCALER),
+            )
+        return False
+
