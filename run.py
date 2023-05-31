@@ -1,3 +1,6 @@
+from pygame import time
+
+from config import DELAY
 from cpu import ChipCPU
 from screen import ChipScreen
 
@@ -9,6 +12,7 @@ def run():
     cpu.load_rom(rom)
 
     while True:
+        time.wait(DELAY)
         cpu.cycle()
         screen.update()
 
