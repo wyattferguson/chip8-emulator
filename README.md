@@ -5,7 +5,7 @@ This is my crack at creating a basic Chip-8 emulator as a learning exercise befo
 - All 34 instructions are here +1 from the extended set.
 - No extended instruction set.
 - I left out the sound beep on purpose.
-- Theres a bug in the DRAW function that will occasionally draw extra bits on the screen or in games like space invaders will redraw dead sprites.
+- Theres a bug in the DRAW function that casuses extra sprite flicker and will draw extra pixels some times. For the scope of this little project Im just not worrying about it.
 
 # Specifications
 
