@@ -5,10 +5,10 @@ from config import DEBUG, MEMORY, PROGRAM_START, REGISTERS
 
 class ChipCPU(object):
     def __init__(self, screen):
-        self.PC = 0  # program counter
-        self.I = 0  # locations register
+        self.PC = 0x0  # program counter
+        self.I = 0x0  # locations register
         self.VF = REGISTERS - 1  # flag register
-        self.SP = 0  # stack pointer
+        self.SP = 0x0  # stack pointer
 
         self.V = bytearray([0] * REGISTERS)  # 16 general purpose registers
         self.ram = bytearray([0] * MEMORY)  # 4kb of memory
@@ -269,19 +269,27 @@ class ChipCPU(object):
         ''' Display n-byte sprite starting at memory location I at (Vx, Vy),
         set VF = collision.
         '''
-        x_start = self.V[self.x]
-        y_start = self.V[self.y]
+        self.V[self.VF] = 0
 
-        for byte_index in range(self.n):
-            row = (y_start + byte_index) % 32
-            sprite = self.ram[self.I + byte_index]
+        y_pos = self.V[self.y] % 32
 
-            for x_offset in range(8):
-                set_bit = sprite & (128 >> x_offset)
-                col = (x_start + x_offset) % 64
+        for row in range(self.n):
+            x_pos = self.V[self.x] % 64
 
-                if set_bit:
-                    self.V[self.VF] = self.screen.flip(col, row) | self.V[self.VF]
+            sprite_byte = self.ram[self.I + row]
+            sprite_bits = bin(sprite_byte)[2:].zfill(8)
+
+            for bit in sprite_bits:
+                if bit == '1':
+                    self.V[self.VF] = self.screen.flip(x_pos, y_pos)
+
+                x_pos += 1
+                if x_pos > 63:
+                    break
+
+            y_pos += 1
+            if y_pos > 31:
+                break
 
         self.op_name = "DRW Vx, Vy, n"
 
