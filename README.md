@@ -3,9 +3,9 @@
 This is my crack at creating a basic Chip-8 emulator as a learning exercise before moving onto more complicated systems. Its a great learning system since it only has 34 instructions and a simple memory layout. A few notes about my project:
 
 - All 34 instructions are here +1 from the extended set.
-- No extended instruction set.
+- I ignored the bulk of the extended instruction set.
 - I left out the sound beep on purpose.
-- Theres a bug in the DRAW function that casuses extra sprite flicker and will draw extra pixels some times. For the scope of this little project Im just not worrying about it.
+- DRAW function is flickery and could use some improvement
 
 # Specifications
 
