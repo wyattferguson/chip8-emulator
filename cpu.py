@@ -59,40 +59,49 @@ class ChipCPU(object):
             0xe: self.SHL_VX
         }
 
-        '''
-        Super Chip-48 Instructions TODO
-        00Cn - SCD nibble
-        00FB - SCR
-        00FC - SCL
-        00FD - EXIT
-        00FE - LOW
-        00FF - HIGH
-        Dxy0 - DRW Vx, Vy, 0
-        Fx75 - LD R, Vx
-        Fx85 - LD Vx, R
-        '''
-
         # 0x0/0xe/0xf & Super Chip-48 instructions
         self.extra_lookup = {
             0x0007: self.LOAD_VX_DT,
-            0x000e: self.SKIP,  # TODO
-            0x000a: self.WAIT,  # TODO
-            0x00a1: self.SKNP,  # TODO
+            0x000e: self.SKP_VX,
+            0x000a: self.WAIT,
+            0x00a1: self.SKNP_VX,
             0x0015: self.LOAD_DT_VX,
             0x0018: self.LOAD_ST_VX,
+            0x001e: self.ADD_I_VX,
             0x0029: self.LOAD_F_VX,
             0x0030: self.LOAD_I_VX_EXT,
             0x0033: self.LOAD_BCD,
             0x0055: self.LOAD_I_VX,
             0x0065: self.LOAD_VX_I,
+            0x009e: self.SKP_VX,
             0x00e0: self.CLS,
             0x00ee: self.RET,
-            0x001e: self.ADD_I_VX
+
         }
+
+        self.font = [0xF0, 0x90, 0x90, 0x90, 0xF0,  # 0
+                     0x20, 0x60, 0x20, 0x20, 0x70,  # 1
+                     0xF0, 0x10, 0xF0, 0x80, 0xF0,  # 2
+                     0xF0, 0x10, 0xF0, 0x10, 0xF0,  # 3
+                     0x90, 0x90, 0xF0, 0x10, 0x10,  # 4
+                     0xF0, 0x80, 0xF0, 0x10, 0xF0,  # 5
+                     0xF0, 0x80, 0xF0, 0x90, 0xF0,  # 6
+                     0xF0, 0x10, 0x20, 0x40, 0x40,  # 7
+                     0xF0, 0x90, 0xF0, 0x90, 0xF0,  # 8
+                     0xF0, 0x90, 0xF0, 0x10, 0xF0,  # 9
+                     0xF0, 0x90, 0xF0, 0x90, 0x90,  # A
+                     0xE0, 0x90, 0xE0, 0x90, 0xE0,  # B
+                     0xF0, 0x80, 0x80, 0x80, 0xF0,  # C
+                     0xE0, 0x90, 0x90, 0x90, 0xE0,  # D
+                     0xF0, 0x80, 0xF0, 0x80, 0xF0,  # E
+                     0xF0, 0x80, 0xF0, 0x80, 0x80]  # F
+
+        self.ram[:len(self.font)] = bytearray(self.font)
 
         self.screen = screen
 
     def load_rom(self, rom_file: str):
+        '''Load .ch8 ROM into memory'''
         print(f"Loading Rom - {rom_file}")
 
         rom_ptr = open(rom_file, 'rb')
@@ -114,6 +123,13 @@ class ChipCPU(object):
         self.lookup = self.op_code & 0xF000
 
     def cycle(self):
+        '''Execute next CPU cycle'''
+        if self.sound_timer:
+            self.sound_timer -= 1
+
+        if self.delay_timer:
+            self.delay_timer -= 1
+
         self.decode()
         self.debug()
 
@@ -139,16 +155,14 @@ class ChipCPU(object):
 
     def JMP(self):
         ''' Move program counter to Addr'''
-        self.PC = self.addr
-        self.PC -= 2
+        self.PC = self.addr - 2
         self.op_name = "JP addr"
 
     def SUB(self):
         '''Call subroutine at addr.'''
         self.stack[self.SP] = self.PC
         self.SP += 1
-        self.PC = self.addr
-        self.PC -= 2  # fix for cycle incrementing PC after
+        self.PC = self.addr - 2
         self.op_name = "CALL addr"
 
     def SE_VX(self):
@@ -243,19 +257,18 @@ class ChipCPU(object):
 
     def JMP_V0_ADDR(self):
         '''Jump to location addr + V0.'''
-        self.PC = self.addr + self.V[0]
+        self.PC = self.addr + self.V[0] - 2
         self.op_name = "JP V0, addr"
 
     def RND(self):
         '''Set Vx = random byte AND kk.'''
-        self.V[self.x] = randint(0, 255) & self.kk
+        self.V[self.x] = (randint(0, 255) & self.kk) & 0xFF
         self.op_name = "RND Vx, kk"
 
     def DRAW(self):
         ''' Display n-byte sprite starting at memory location I at (Vx, Vy),
         set VF = collision.
         '''
-
         x_start = self.V[self.x]
         y_start = self.V[self.y]
 
@@ -268,30 +281,35 @@ class ChipCPU(object):
                 col = (x_start + x_offset) % 64
 
                 if set_bit:
-                    self.V[self.VF] = self.screen.flip(col, row) or self.V[self.VF]
+                    self.V[self.VF] = self.screen.flip(col, row) | self.V[self.VF]
 
         self.op_name = "DRW Vx, Vy, n"
 
-    # TODO
-    def SKIP(self):
-        '''Skip next instruction if key with the value of Vx is pressed.'''
-
-        self.op_name = "SKP Vx"
-
-    # TODO
-    def SKNP(self):
+    def SKNP_VX(self):
         '''Skip next instruction if key with the value of Vx is not pressed.'''
+        if not self.screen.pressed_keys[self.V[self.x] & 0xF]:
+            self.PC += 2
         self.op_name = "SKNP Vx"
+
+    def SKP_VX(self):
+        '''Skip next instruction if key with the value of Vx is pressed.'''
+        if self.screen.pressed_keys[self.V[self.x] & 0xF]:
+            self.PC += 2
+        self.op_name = "SKP Vx"
 
     def LOAD_VX_DT(self):
         '''Set Vx = delay timer value.'''
         self.V[self.x] = self.delay_timer
         self.op_name = "LD Vx, DT"
 
-    # TODO
     def WAIT(self):
         '''Wait for a key press, store the value of the key in Vx.'''
-        self.op_name = "LD Vx, K"
+        if not any(self.screen.pressed_keys):
+            self.PC -= 2
+            return False
+
+        self.V[self.x] = self.screen.pressed_keys.index(True)
+        self.op_name = "WAIT"
 
     def LOAD_DT_VX(self):
         '''Set delay timer = Vx.'''
@@ -321,7 +339,7 @@ class ChipCPU(object):
 
     def LOAD_I_VX(self):
         '''Store registers V0 through Vx in memory starting at location I.'''
-        for i in range(0, self.x + 1):
+        for i in range(self.x + 1):
             self.ram[self.I + i] = self.V[i]
         self.op_name = "LD [I], Vx"
 
@@ -348,5 +366,4 @@ class ChipCPU(object):
 
     def debug(self):
         if DEBUG:
-            print(f"""{self.PC} - {self.SP} - {hex(self.lookup)} -
-              {self.op_code} {hex(self.op_code)} - {self.op_name}""")
+            print(f"""{self.PC} - {self.SP} - {hex(self.lookup)} - {self.op_code} {hex(self.op_code)} - {self.op_name}""")

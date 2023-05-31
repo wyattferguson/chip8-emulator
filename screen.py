@@ -1,7 +1,8 @@
 
 import pygame as pg
 
-from config import BLACK, DISPLAY_SCALER, FPS, SCREEN_HEIGHT, SCREEN_WIDTH, WHITE
+from config import (BLACK, DISPLAY_SCALER, FPS, SCREEN_HEIGHT, SCREEN_WIDTH,
+                    WHITE)
 
 
 class ChipScreen():
@@ -10,7 +11,7 @@ class ChipScreen():
         pg.init()
         pg.display.set_caption("Chip8 Emulator")
 
-        self.keys = "1234QWERASDFZXCV"
+        self.keys = "1234qwerasdfzxcv"
         self.key_codes = [pg.key.key_code(key) for key in self.keys]
         self.pressed_keys = [False] * 16
         self.screen_size = (SCREEN_WIDTH * DISPLAY_SCALER, SCREEN_HEIGHT * DISPLAY_SCALER)
@@ -31,11 +32,11 @@ class ChipScreen():
         """Flip color of given pixel BLACK/WHITE"""
         scaled_pixel = (px * DISPLAY_SCALER, py * DISPLAY_SCALER)
         color = self.screen.get_at(scaled_pixel)
-        new_color = BLACK if color == WHITE else WHITE
+        swapped_color = BLACK if color == WHITE else WHITE
 
         pg.draw.rect(
             self.screen,
-            new_color,
+            swapped_color,
             pg.Rect(*scaled_pixel, DISPLAY_SCALER, DISPLAY_SCALER),
         )
 
@@ -47,8 +48,8 @@ class ChipScreen():
 
             if event.type == pg.KEYDOWN or event.type == pg.KEYUP:
                 if event.key in self.key_codes:
-                    idx = self.key_codes.index(event.key)
-                    self.pressed_keys[idx] = not self.pressed_keys[idx]
+                    key_idx = self.key_codes.index(event.key)
+                    self.pressed_keys[key_idx] = not self.pressed_keys[key_idx]
 
             if event.type == pg.QUIT:
                 pg.quit()

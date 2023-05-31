@@ -1,14 +1,14 @@
 
 
-from config import ROM_FILE
 from cpu import ChipCPU
 from screen import ChipScreen
 
 
 def run():
+    rom = "./roms/pong.ch8"
     screen = ChipScreen()
     cpu = ChipCPU(screen)
-    cpu.load_rom(ROM_FILE)
+    cpu.load_rom(rom)
 
     while True:
         cpu.cycle()
