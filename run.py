@@ -1,5 +1,3 @@
-
-
 from cpu import ChipCPU
 from screen import ChipScreen
 
