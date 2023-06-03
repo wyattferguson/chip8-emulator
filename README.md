@@ -1,3 +1,5 @@
+![chip8pong](https://i.imgur.com/MdyWkCT.png)
+
 # :joystick: Chip-8 Emulator
 
 This is my crack at creating a basic Chip-8 emulator as a learning exercise before moving onto more complicated systems. Its a great learning system since it only has 34 instructions and a simple memory layout. A few notes about my project:
