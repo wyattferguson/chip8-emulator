@@ -167,3 +167,11 @@ Z 	X 	C 	V
 - How to Create Your Very Own Chip-8 Emulator ([https://www.freecodecamp.org/news/creating-your-very-own-chip-8-emulator/](https://www.freecodecamp.org/news/creating-your-very-own-chip-8-emulator/))
 - Bitwise Operators in Python ([https://realpython.com/python-bitwise-operators/#binary-number-representations](https://realpython.com/python-bitwise-operators/#binary-number-representations))
 - Chip-8 Test Rom ([https://github.com/corax89/chip8-test-rom](https://github.com/corax89/chip8-test-rom))
+
+## :postbox: Contact & Support
+
+Created by [Wyatt Ferguson](@wyattxdev@mastodon.social)
+
+For any comments or questions message me on [Mastodon](@wyattxdev@mastodon.social)
+
+[:coffee: Buy Me A Coffee](https://www.buymeacoffee.com/wyattferguson)
