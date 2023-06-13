@@ -1,6 +1,7 @@
 from random import randint
 
-from config import DEBUG, MEMORY, PROGRAM_START, REGISTERS
+from config import DEBUG, FONT, MEMORY, PROGRAM_START, REGISTERS
+from opcodes import code_lookup, extra_lookup, logical_lookup
 
 
 class ChipCPU(object):
@@ -15,7 +16,6 @@ class ChipCPU(object):
         self.stack = [0] * REGISTERS
 
         self.delay_timer = 0
-        self.sound_timer = 0
 
         self.op_code = 0  # current instruction
         self.op_name = ""
@@ -26,77 +26,7 @@ class ChipCPU(object):
         self.kk = 0
         self.lookup = 0
 
-        # 0xX000 primary instructions set
-        self.code_lookup = {
-            0x0000: self.EXTRAS,
-            0x1000: self.JMP,
-            0x2000: self.SUB,
-            0x3000: self.SE_VX,
-            0x4000: self.SNE_VX,
-            0x5000: self.SE_VX_VY,
-            0x6000: self.LOAD_VX,
-            0x7000: self.ADD_VX_KK,
-            0x8000: self.LOGICAL,
-            0x9000: self.SNE_VX_VY,
-            0xa000: self.LOAD_I,
-            0xb000: self.JMP_V0_ADDR,
-            0xc000: self.RND,
-            0xd000: self.DRAW,
-            0xe000: self.EXTRAS,
-            0xf000: self.EXTRAS,
-        }
-
-        # 0x800X specific instructions
-        self.logical_lookup = {
-            0x0: self.SET_VX_VY,
-            0x1: self.OR_VX_VY,
-            0x2: self.AND_VX_VY,
-            0x3: self.XOR_VX_VY,
-            0x4: self.ADD_VX_VY,
-            0x5: self.SUB_VX_VY,
-            0x6: self.SHR_VX,
-            0x7: self.SUBN_VX_VY,
-            0xe: self.SHL_VX
-        }
-
-        # 0x0/0xe/0xf & Super Chip-48 instructions
-        self.extra_lookup = {
-            0x0007: self.LOAD_VX_DT,
-            0x000e: self.SKP_VX,
-            0x000a: self.WAIT,
-            0x00a1: self.SKNP_VX,
-            0x0015: self.LOAD_DT_VX,
-            0x0018: self.LOAD_ST_VX,
-            0x001e: self.ADD_I_VX,
-            0x0029: self.LOAD_F_VX,
-            0x0030: self.LOAD_I_VX_EXT,
-            0x0033: self.LOAD_BCD,
-            0x0055: self.LOAD_I_VX,
-            0x0065: self.LOAD_VX_I,
-            0x009e: self.SKP_VX,
-            0x00e0: self.CLS,
-            0x00ee: self.RET,
-
-        }
-
-        self.font = [0xF0, 0x90, 0x90, 0x90, 0xF0,  # 0
-                     0x20, 0x60, 0x20, 0x20, 0x70,  # 1
-                     0xF0, 0x10, 0xF0, 0x80, 0xF0,  # 2
-                     0xF0, 0x10, 0xF0, 0x10, 0xF0,  # 3
-                     0x90, 0x90, 0xF0, 0x10, 0x10,  # 4
-                     0xF0, 0x80, 0xF0, 0x10, 0xF0,  # 5
-                     0xF0, 0x80, 0xF0, 0x90, 0xF0,  # 6
-                     0xF0, 0x10, 0x20, 0x40, 0x40,  # 7
-                     0xF0, 0x90, 0xF0, 0x90, 0xF0,  # 8
-                     0xF0, 0x90, 0xF0, 0x10, 0xF0,  # 9
-                     0xF0, 0x90, 0xF0, 0x90, 0x90,  # A
-                     0xE0, 0x90, 0xE0, 0x90, 0xE0,  # B
-                     0xF0, 0x80, 0x80, 0x80, 0xF0,  # C
-                     0xE0, 0x90, 0x90, 0x90, 0xE0,  # D
-                     0xF0, 0x80, 0xF0, 0x80, 0xF0,  # E
-                     0xF0, 0x80, 0xF0, 0x80, 0x80]  # F
-
-        self.ram[:len(self.font)] = bytearray(self.font)
+        self.ram[:len(FONT)] = bytearray(FONT)
 
         self.screen = screen
 
@@ -122,30 +52,31 @@ class ChipCPU(object):
         self.kk = self.op_code & 0x00FF  # lowest 8 bits
         self.lookup = self.op_code & 0xF000
 
-    def cycle(self):
-        '''Execute next CPU cycle'''
-        if self.sound_timer:
-            self.sound_timer -= 1
-
-        if self.delay_timer:
-            self.delay_timer -= 1
-
-        self.decode()
-        self.debug()
-
+    def execute(self):
         try:
-            self.code_lookup[self.lookup]()
+            code_lookup[self.lookup]()
         except Exception as e:
             # stop on op code error
             print(e)
             exit()
+
+
+    def cycle(self):
+        '''Execute next CPU cycle'''
+        if self.delay_timer:
+            self.delay_timer -= 1
+
+        self.decode()
+        self.execute()
+
+        if DEBUG:
+            print(self)
 
         self.PC += 2  # move program counter to next instruction
 
     def CLS(self):
         '''Clear the display.'''
         self.screen.clear_screen()
-        self.op_name = "CLS"
 
     def RET(self):
         '''Return from a subroutine.'''
@@ -326,7 +257,7 @@ class ChipCPU(object):
 
     def LOAD_ST_VX(self):
         '''Set sound timer = Vx.'''
-        self.sound_timer = self.V[self.x]
+        # self.sound_timer = self.V[self.x]
         self.op_name = "LD ST, Vx"
 
     def ADD_I_VX(self):
@@ -366,12 +297,14 @@ class ChipCPU(object):
         self.I = self.V[self.x] * 10
         self.op_name = "LD HF, Vx"
 
+    def LOAD(self):
+        pass
+
     def EXTRAS(self):
-        self.extra_lookup[self.kk]()
+        extra_lookup[self.kk]()
 
     def LOGICAL(self):
-        self.logical_lookup[self.n]()
+        logical_lookup[self.n]()
 
-    def debug(self):
-        if DEBUG:
-            print(f"""{self.PC} - {self.SP} - {hex(self.lookup)} - {self.op_code} {hex(self.op_code)} - {self.op_name}""")
+    def __str__(self):
+        return (f"""{self.PC} - {self.SP} - {hex(self.lookup)} - {self.op_code} {hex(self.op_code)} - {self.op_name}""")
