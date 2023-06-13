@@ -9,76 +9,43 @@ class OpCode:
     flags: tuple = None
 
     def __str__(self) -> str:
-        return f"{self.label} - {self.args}"
+        return f"{self.label} - {self.call} - {self.args}"
 
 
 OPCODES = {
-    0x0000: OpCode("EXTRAS"),
-    0x1000: "JMP",
-    0x2000: "SUB",
-    0x3000: "SE_VX",
-    0x4000: "SNE_VX",
-    0x5000: "SE_VX_VY",
-    0x6000: "LOAD_VX",
-    0x7000: "ADD_VX_KK",
-    0x8000: "LOGICAL",
-    0x9000: "SNE_VX_VY",
-    0xa000: "LOAD_I",
-    0xb000: "JMP_V0_ADDR",
-    0xc000: "RND",
-    0xd000: "DRAW",
-    0xe000: "EXTRAS",
-    0xf000: "EXTRAS"
-}
-
-# 0xX000 primary instructions set
-code_lookup = {
-    0x0000: "EXTRAS",
-    0x1000: "JMP",
-    0x2000: "SUB",
-    0x3000: "SE_VX",
-    0x4000: "SNE_VX",
-    0x5000: "SE_VX_VY",
-    0x6000: "LOAD_VX",
-    0x7000: "ADD_VX_KK",
-    0x8000: "LOGICAL",
-    0x9000: "SNE_VX_VY",
-    0xa000: "LOAD_I",
-    0xb000: "JMP_V0_ADDR",
-    0xc000: "RND",
-    0xd000: "DRAW",
-    0xe000: "EXTRAS",
-    0xf000: "EXTRAS"
-}
-
-# 0x800X specific instructions
-logical_lookup = {
-    0x0: "SET_VX_VY",
-    0x1: "OR_VX_VY",
-    0x2: "AND_VX_VY",
-    0x3: "XOR_VX_VY",
-    0x4: "ADD_VX_VY",
-    0x5: "SUB_VX_VY",
-    0x6: "SHR_VX",
-    0x7: "SUBN_VX_VY",
-    0xe: "SHL_VX"
-}
-
-# 0x0/0xe/0xf & Super Chip-48 instructions
-extra_lookup = {
-    0x0007: "LOAD_VX_DT",
-    0x000e: "SKP_VX",
-    0x000a: "WAIT",
-    0x00a1: "SKNP_VX",
-    0x0015: "LOAD_DT_VX",
-    0x0018: "LOAD_ST_VX",
-    0x001e: "ADD_I_VX",
-    0x0029: "LOAD_F_VX",
-    0x0030: "LOAD_I_VX_EXT",
-    0x0033: "LOAD_BCD",
-    0x0055: "LOAD_I_VX",
-    0x0065: "LOAD_VX_I",
-    0x009e: "SKP_VX",
-    0x00e0: OpCode("CLS","CLS"),
-    0x00ee: "RET"
+    0x00e0: OpCode("CLS", "CLS"),
+    0x00ee: OpCode("RET", "RET"),
+    0x1000: OpCode("JMP addr", "JMP"),
+    0x2000: OpCode("CALL addr", "SUB"),
+    0x3000: OpCode("SE Vx, kk", "SE_VX"),
+    0x4000: OpCode("SNE Vx, kk", "SNE_VX"),
+    0x5000: OpCode("SE Vx, Vy", "SE_VX_VY"),
+    0x6000: OpCode("LD Vx, kk", "LOAD_VX"),
+    0x7000: OpCode("ADD Vx, kk", "ADD_VX_KK"),
+    0x8000: OpCode("LD Vx, Vy", "SET_VX_VY"),
+    0x8001: OpCode("OR Vx, Vy", "OR_VX_VY"),
+    0x8002: OpCode("AND Vx, Vy", "AND_VX_VY"),
+    0x8003: OpCode("XOR Vx, Vy", "XOR_VX_VY"),
+    0x8004: OpCode("ADD Vx, Vy", "ADD_VX_VY"),
+    0x8005: OpCode("SUB Vx, Vy", "SUB_VX_VY"),
+    0x8006: OpCode("SHR Vx {, Vy}", "SHR_VX"),
+    0x8007: OpCode("SUBN Vx, Vy", "SUBN_VX_VY"),
+    0x800e: OpCode("SHL Vx {, Vy}", "SHL_VX"),
+    0x9000: OpCode("SNE Vx, Vy", "SNE_VX_VY"),
+    0xa000: OpCode("LD I, addr", "LOAD_I"),
+    0xb000: OpCode("JP V0, addr", "JMP_V0_ADDR"),
+    0xc000: OpCode("RND Vx, kk", "RND"),
+    0xd000: OpCode("DRW Vx, Vy, n", "DRAW"),
+    0xe09e: OpCode("SKP VX", "SKP_VX"),
+    0xe0a1: OpCode("SKNP Vx", "SKNP_VX"),
+    0xf007: OpCode("LD Vx, DT", "LOAD_VX_DT"),
+    0xf00a: OpCode("LD Vx, K", "WAIT"),
+    0xf015: OpCode("LD DT, Vx", "LOAD_DT_VX"),
+    0xf018: OpCode("LD ST, Vx", "LOAD_ST_VX"),
+    0xf01e: OpCode("ADD I, Vx", "ADD_I_VX"),
+    0xf029: OpCode("LD F, Vx", "LOAD_F_VX"),
+    0xf030: OpCode("LD HF, Vx", "LOAD_I_VX_EXT"),
+    0xf033: OpCode("LD B, Vx", "LOAD_BCD"),
+    0xf055: OpCode("LD [I], Vx", "LOAD_I_VX"),
+    0xf065: OpCode("LD Vx, [I]", "LOAD_VX_I"),
 }
