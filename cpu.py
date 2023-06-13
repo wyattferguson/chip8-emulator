@@ -101,19 +101,15 @@ class ChipCPU(object):
         '''Call subroutine at addr.'''
         self.stack[self.SP] = self.PC
         self.SP += 1
-        self.PC = self.addr - 2
+        self.JMP()
 
     def SE_VX(self, equal: bool):
         ''' Skip next instruction if Vx !/= kk. '''
-        cmp = self.V[self.x] == self.kk
-        if equal == cmp:
-            self.PC += 2
+        self.PC += 2 if (self.V[self.x] == self.kk) == equal else 0
 
     def SE_VX_VY(self, equal: bool):
         '''Skip next instruction if Vx !/= Vy.'''
-        cmp = self.V[self.x] == self.V[self.y]
-        if equal == cmp:
-            self.PC += 2
+        self.PC += 2 if (self.V[self.x] == self.V[self.y]) == equal else 0
 
     def LOAD_VX(self):
         ''' Set register X equal to kk'''
