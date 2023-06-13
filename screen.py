@@ -13,7 +13,8 @@ class ChipScreen():
         self.keys = "1234qwerasdfzxcv"
         self.key_codes = [pg.key.key_code(key) for key in self.keys]
         self.pressed_keys = [False] * 16
-        self.screen_size = (SCREEN_WIDTH * DISPLAY_SCALER, SCREEN_HEIGHT * DISPLAY_SCALER)
+        self.screen_size = (SCREEN_WIDTH * DISPLAY_SCALER,
+                            SCREEN_HEIGHT * DISPLAY_SCALER)
         self.screen = pg.display.set_mode(self.screen_size)
 
     def update(self):
@@ -41,11 +42,11 @@ class ChipScreen():
     def keyboard(self):
         """handle keypresses and quit events"""
         for event in pg.event.get():
-            if event.type == pg.KEYDOWN or event.type == pg.KEYUP:
+            if event.type == pg.QUIT or event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE:
+                pg.quit()
+                exit()
+
+            elif event.type == pg.KEYDOWN or event.type == pg.KEYUP:
                 if event.key in self.key_codes:
                     key_idx = self.key_codes.index(event.key)
                     self.pressed_keys[key_idx] = not self.pressed_keys[key_idx]
-
-            if event.type == pg.QUIT:
-                pg.quit()
-                exit()
