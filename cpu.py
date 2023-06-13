@@ -53,16 +53,15 @@ class ChipCPU(object):
 
     def execute(self):
         try:
-
             args = []
             lookup_code = self.lookup
             if self.lookup in [0xe000, 0xf000, 0x0]:
                 lookup_code = self.op_code & 0xF0FF
-            elif self.lookup in [0x8000]:
+            elif self.lookup == 0x8000:
                 lookup_code = self.op_code & 0xF00F
 
             self.cur_inst = OPCODES[lookup_code]
-            # print(hex(lookup_code), self.cur_inst.call, hex(self.kk), hex(self.addr), hex(self.PC))
+            args = self.cur_inst.args
             if args:
                 getattr(self, self.cur_inst.call)(*args)
             else:
@@ -104,19 +103,16 @@ class ChipCPU(object):
         self.SP += 1
         self.PC = self.addr - 2
 
-    def SE_VX(self):
-        ''' Skip next instruction if Vx = kk. '''
-        if self.V[self.x] == self.kk:
+    def SE_VX(self, equal: bool):
+        ''' Skip next instruction if Vx !/= kk. '''
+        cmp = self.V[self.x] == self.kk
+        if equal == cmp:
             self.PC += 2
 
-    def SNE_VX(self):
-        ''' Skip next instruction if Vx != kk. '''
-        if self.V[self.x] != self.kk:
-            self.PC += 2
-
-    def SE_VX_VY(self):
-        '''Skip next instruction if Vx = Vy.'''
-        if self.V[self.x] == self.V[self.y]:
+    def SE_VX_VY(self, equal: bool):
+        '''Skip next instruction if Vx !/= Vy.'''
+        cmp = self.V[self.x] == self.V[self.y]
+        if equal == cmp:
             self.PC += 2
 
     def LOAD_VX(self):
@@ -149,32 +145,22 @@ class ChipCPU(object):
         self.V[self.VF] = 1 if value > 255 else 0  # set carry flag
         self.V[self.x] = value & 0xFF
 
-    def SUB_VX_VY(self):
-        '''Set Vx = Vx - Vy, set VF = NOT borrow.'''
-        value = self.V[self.x] - self.V[self.y]
-        # set carry flag
-        self.V[self.VF] = 1 if self.V[self.x] > self.V[self.y] else 0
-        self.V[self.x] = value & 0xFF
-
     def SHR_VX(self):
         '''Set Vx = Vx SHR 1.'''
         self.V[self.x] = self.V[self.x] >> 1
 
-    def SUBN_VX_VY(self):
-        '''Set Vx = Vy - Vx, set VF = NOT borrow.'''
-        value = self.V[self.y] - self.V[self.x]
+    def SUB_VX_VY(self, reg_a: str, reg_b: str):
+        '''Set Vx = Vx - Vy, set VF = NOT borrow.'''
+        source = getattr(self, reg_a)
+        target = getattr(self, reg_b)
+        value = self.V[source] - self.V[target]
         # set carry flag
-        self.V[self.VF] = 1 if self.V[self.y] > self.V[self.x] else 0
-        self.V[self.x] = value & 0xFF
+        self.V[self.VF] = 1 if self.V[source] > self.V[target] else 0
+        self.V[source] = value & 0xFF
 
     def SHL_VX(self):
         '''Set Vx = Vx SHL 1.'''
         self.V[self.x] = (self.V[self.x] << 1) & 0xFF
-
-    def SNE_VX_VY(self):
-        '''Skip next instruction if Vx != Vy.'''
-        if self.V[self.x] != self.V[self.y]:
-            self.PC += 2
 
     def LOAD_I(self):
         '''Set I = addr.'''
@@ -214,14 +200,9 @@ class ChipCPU(object):
             if y_pos > 31:
                 break
 
-    def SKNP_VX(self):
-        '''Skip next instruction if key with the value of Vx is not pressed.'''
-        if not self.screen.pressed_keys[self.V[self.x] & 0xF]:
-            self.PC += 2
-
-    def SKP_VX(self):
+    def SKP_VX(self, equal: bool):
         '''Skip next instruction if key with the value of Vx is pressed.'''
-        if self.screen.pressed_keys[self.V[self.x] & 0xF]:
+        if self.screen.pressed_keys[self.V[self.x] & 0xF] == equal:
             self.PC += 2
 
     def LOAD_VX_DT(self):
@@ -250,7 +231,7 @@ class ChipCPU(object):
 
     def LOAD_VX_I(self):
         '''Read registers V0 through Vx from memory starting at location I.'''
-        for i in range(0, self.x + 1):
+        for i in range(self.x + 1):
             self.V[i] = self.ram[self.I + i]
 
     def LOAD_F_VX(self):
@@ -268,12 +249,6 @@ class ChipCPU(object):
         self.ram[self.I] = int(bcd_value[0])
         self.ram[self.I + 1] = int(bcd_value[1])
         self.ram[self.I + 2] = int(bcd_value[2])
-
-    def LOAD_I_VX_EXT(self):
-        '''Load I with the sprite indicated in the X register.
-        All sprites are 10 bytes long.
-        '''
-        self.I = self.V[self.x] * 10
 
     def __str__(self):
         return (f"{self.PC}-{self.SP}-{hex(self.addr)}-{hex(self.op_code)}-{self.cur_inst.call}")
