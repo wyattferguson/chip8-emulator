@@ -125,15 +125,15 @@ class ChipCPU(object):
 
     def OR_VX_VY(self):
         '''Set Vx = Vx OR Vy.'''
-        self.V[self.x] = self.V[self.x] | self.V[self.y]
+        self.V[self.x] |= self.V[self.y]
 
     def AND_VX_VY(self):
         '''Set Vx = Vx AND Vy.'''
-        self.V[self.x] = self.V[self.x] & self.V[self.y]
+        self.V[self.x] &= self.V[self.y]
 
     def XOR_VX_VY(self):
         '''Set Vx = Vx XOR Vy.'''
-        self.V[self.x] = self.V[self.x] ^ self.V[self.y]
+        self.V[self.x] ^= self.V[self.y]
 
     def ADD_VX_VY(self):
         '''Set Vx = Vx + Vy, set VF = carry.'''
@@ -223,7 +223,7 @@ class ChipCPU(object):
 
     def ADD_I_VX(self):
         '''Set I = I + Vx.'''
-        self.I = self.I + self.V[self.x]
+        self.I += self.V[self.x]
 
     def LOAD_VX_I(self):
         '''Read registers V0 through Vx from memory starting at location I.'''
