@@ -53,7 +53,6 @@ class ChipCPU(object):
 
     def execute(self):
         try:
-            args = []
             lookup_code = self.lookup
             if self.lookup in [0xe000, 0xf000, 0x0]:
                 lookup_code = self.op_code & 0xF0FF
@@ -61,9 +60,8 @@ class ChipCPU(object):
                 lookup_code = self.op_code & 0xF00F
 
             self.cur_inst = OPCODES[lookup_code]
-            args = self.cur_inst.args
-            if args:
-                getattr(self, self.cur_inst.call)(*args)
+            if self.cur_inst.args:
+                getattr(self, self.cur_inst.call)(*self.cur_inst.args)
             else:
                 getattr(self, self.cur_inst.call)()
         except Exception as e:
