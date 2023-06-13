@@ -246,9 +246,8 @@ class ChipCPU(object):
     def LOAD_BCD(self):
         '''Store BCD representation of Vx in memory locations I, I+1, and I+2.'''
         bcd_value = '{:03d}'.format(self.V[self.x])
-        self.ram[self.I] = int(bcd_value[0])
-        self.ram[self.I + 1] = int(bcd_value[1])
-        self.ram[self.I + 2] = int(bcd_value[2])
+        for n in range(3):
+            self.ram[self.I + n] = int(bcd_value[n])
 
     def __str__(self):
         return (f"{self.PC}-{self.SP}-{hex(self.addr)}-{hex(self.op_code)}-{self.cur_inst.call}")
