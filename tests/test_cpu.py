@@ -1,8 +1,8 @@
 import pygame as pg
 import pytest
 
-from chip8_redux.cpu import CPU
-from chip8_redux.screen import Screen
+from chip8.cpu import CPU
+from chip8.screen import Screen
 
 screen_scale = 1
 pg.init()
