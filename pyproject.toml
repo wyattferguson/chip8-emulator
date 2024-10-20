@@ -1,17 +1,23 @@
 [tool.poetry]
 name = "chip8-emulator"
-version = "0.1.0"
-description = ""
-authors = ["wyattferguson <wyattf@gmail.com>"]
+version = "0.2.0"
+description = "Chip8 Emulator"
+authors = ["Wyatt Ferguson <wyattf@gmail.com>"]
 readme = "README.md"
-packages = [{include = "chip8_emulator"}]
+package-mode = false
 
 [tool.poetry.dependencies]
-python = "^3.11"
-pygame = "^2.4.0"
+python = "^3.12"
+ruff = "^0.7.0"
+pygame = "^2.6.1"
+argparse = "^1.4.0"
 
+[tool.poetry.group.test.dependencies]
+pytest = "^8.3.3"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
+[tool.poetry.scripts]
+test = "my_package.log_revision:start"

@@ -5,9 +5,48 @@
 This is my crack at creating a basic Chip-8 emulator as a learning exercise before moving onto more complicated systems. Its a great learning system since it only has 34 instructions and a simple memory layout. A few notes about my project:
 
 - All 34 instructions are here +1 from the extended set.
-- I ignored the bulk of the extended instruction set.
-- I left out the sound beep on purpose.
-- DRAW function is flickery and could use some improvement
+- Screen has a flicker because of the way Im redrawing the pixels, but for this its good enough.
+- Testing needs to be expanded for the cpu
+- Some ROMS and assembly code for them has been included in the /roms/ folder.
+
+The current version v0.2 of this emulator was just to clean up some old bugs and to add testing in preperation for a other larger emulator builds down the line.
+
+# Installation & How To Use
+
+Installation is pretty straight forward, Im using [Poetry](https://python-poetry.org/docs/) to manage everything.
+
+First if you dont Poetry installed run this:
+
+```
+pipx install poetry
+```
+
+Then install the dependencies with:
+
+```
+poetry install
+```
+
+By default the emulator will load the walk.ch8 demo, which has a simple sprite moving around the screen with the W,A,S,D keys.
+
+```
+poetry run python ./chip8/chip8.py
+
+// You can pass another rom with the -r flag
+
+poetry run python ./chip8/chip8.py -r ./roms/tank.ch8
+
+// The screen scale can be adjusted with the -s flag (ie. -s 15 will scale is 15x the original resolution of 64x32)
+
+poetry run python ./chip8/chip8.py -s 15
+
+```
+
+To run basic tests for the CPU and screen use:
+
+```
+poetry run pytest
+```
 
 # Specifications
 
@@ -163,19 +202,22 @@ Z 	X 	C 	V
 # References
 
 - Guide to making a CHIP-8 emulator ([https://tobiasvl.github.io/blog/write-a-chip-8-emulator/](https://tobiasvl.github.io/blog/write-a-chip-8-emulator/))
+- Octo CHIP-8 Assember - ([https://johnearnest.github.io/Octo/](https://johnearnest.github.io/Octo/))
 - CHIP-8 Wikipedia ([https://en.wikipedia.org/wiki/CHIP-8](https://en.wikipedia.org/wiki/CHIP-8))
-- How to Create Your Very Own Chip-8 Emulator ([https://www.freecodecamp.org/news/creating-your-very-own-chip-8-emulator/](https://www.freecodecamp.org/news/creating-your-very-own-chip-8-emulator/))
 - Bitwise Operators in Python ([https://realpython.com/python-bitwise-operators/#binary-number-representations](https://realpython.com/python-bitwise-operators/#binary-number-representations))
 - Chip-8 Test Rom ([https://github.com/corax89/chip8-test-rom](https://github.com/corax89/chip8-test-rom))
+- Chip-8 Variant Opcode Table ([https://chip8.gulrak.net/](https://chip8.gulrak.net/))
 
 ## :postbox: Contact & Support
 
 Created by [Wyatt Ferguson](https://twitter.com/wyattxdev)
 
 For any questions or comments you can send them to me on my socials:
+
 ### :shaved_ice: Follow on [Mastodon @wyattxdev@mastodon.social](@wyattxdev@mastodon.social)
+
 ### :tropical_drink: Follow on [Twitter @wyattxdev](https://twitter.com/wyattxdev)
 
-
 If you find this useful and want to tip me a little coffee money:
+
 ### :coffee: [Buy Me A Coffee](https://www.buymeacoffee.com/wyattferguson)
