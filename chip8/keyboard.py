@@ -39,5 +39,8 @@ class Keyboard(object):
                 pg.quit()
                 exit()
             elif event.type == pg.KEYDOWN or event.type == pg.KEYUP:
-                key = self.key_map[event.key]
-                self.pressed_keys[key] = not self.pressed_keys[key]
+                try:
+                    key = self.key_map[event.key]
+                    self.pressed_keys[key] = not self.pressed_keys[key]
+                except Exception as e:
+                    pass

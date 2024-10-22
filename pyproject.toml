@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "chip8-emulator"
+name = "chip8"
 version = "0.2.0"
 description = "Chip8 Emulator"
 authors = ["Wyatt Ferguson <wyattf@gmail.com>"]
