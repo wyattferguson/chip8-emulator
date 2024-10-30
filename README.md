@@ -213,6 +213,7 @@ Z 	X 	C 	V
 Created by [Wyatt Ferguson](https://twitter.com/wyattxdev)
 
 For any questions or comments heres how you can reach me:
+### :mailbox_with_mail: Email me at [wyattxdev@duck.com](wyattxdev@duck.com)
 ### :shaved_ice: Follow on [BlueSky @wyattf](wyattf.bsky.social)
 ### :tropical_drink: Follow on [Twitter @wyattxdev](https://twitter.com/wyattxdev)
 
