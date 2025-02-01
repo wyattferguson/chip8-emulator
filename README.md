@@ -210,13 +210,12 @@ Z 	X 	C 	V
 
 ## :postbox: Contact & Support
 
-Created by [Wyatt Ferguson](https://twitter.com/wyattxdev)
+Created by [Wyatt Ferguson](https://wyattf.bsky.social)
 
 For any questions or comments heres how you can reach me:
 ### :mailbox_with_mail: Email me at [wyattxdev@duck.com](wyattxdev@duck.com)
-### :shaved_ice: Follow on [BlueSky @wyattf](wyattf.bsky.social)
-### :tropical_drink: Follow on [Twitter @wyattxdev](https://twitter.com/wyattxdev)
+### :tropical_drink: Follow on [BlueSky @wyattf](https://wyattf.bsky.social)
+
 
 If you find this useful and want to tip me a little coffee money:
-
 ### :coffee: [Buy Me A Coffee](https://www.buymeacoffee.com/wyattferguson)
