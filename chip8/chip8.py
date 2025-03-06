@@ -1,6 +1,7 @@
 import argparse
 
 import pygame as pg
+
 from cpu import CPU
 from keyboard import Keyboard
 from screen import Screen

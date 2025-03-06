@@ -1,10 +1,10 @@
 import pygame as pg
 
 
-class Keyboard(object):
+class Keyboard:
     """16 Key hex keyboard ranging 1 to V."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.key_map = {
             49: 0x1,  # 1
             50: 0x2,  # 2
@@ -23,24 +23,20 @@ class Keyboard(object):
             99: 0xB,  # C
             118: 0xF,  # V
         }
-        self.pressed_keys = [False] * 16
+        self.pressed_keys: list[int] = [0] * 16
 
-    def is_key_pressed(self, key_code):
+    def is_key_pressed(self, key_code: int) -> int:
         return self.pressed_keys[key_code]
 
-    def update(self):
+    def update(self) -> None:
         for event in pg.event.get():
             # Press ESCAPE to quit emulator
-            if (
-                event.type == pg.QUIT
-                or event.type == pg.KEYDOWN
-                and event.key == pg.K_ESCAPE
-            ):
+            if event.type == pg.QUIT or event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE:
                 pg.quit()
                 exit()
             elif event.type == pg.KEYDOWN or event.type == pg.KEYUP:
                 try:
                     key = self.key_map[event.key]
                     self.pressed_keys[key] = not self.pressed_keys[key]
-                except Exception as e:
+                except Exception:
                     pass

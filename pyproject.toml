@@ -1,23 +1,62 @@
-[tool.poetry]
-name = "chip8"
-version = "0.2.0"
-description = "Chip8 Emulator"
-authors = ["Wyatt Ferguson <wyattf@gmail.com>"]
+[project]
+name = "chip8-emulator"
+version = "1.0.2"
+description = "The Chip8 is a very simple system, originally created as an interpretter for an 8 bit CPU in the 1970s."
+license = {text = "MIT License"}
+keywords = ["chip8", "emulator", "vintage cpu", "cpu", "python"]
 readme = "README.md"
-package-mode = false
+authors = [
+    { name = "wyattferguson", email = "wyattf@gmail.com" }
+]
+requires-python = ">=3.12"
 
-[tool.poetry.dependencies]
-python = "^3.12"
-ruff = "^0.7.0"
-pygame = "^2.6.1"
-argparse = "^1.4.0"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python",
+    "Topic :: Utilities",
+    "License :: OSI Approved :: MIT License"
+]
+dependencies = [
+    "pygame>=2.6.1",
+]
 
-[tool.poetry.group.test.dependencies]
-pytest = "^8.3.3"
+[dependency-groups]
+dev = [
+    "mypy>=1.15.0",
+    "pytest>=8.3.4",
+    "ruff>=0.9.7",
+    "taskipy>=1.14.1",
+]
 
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+[project.urls]
+homepage = "https://github.com/wyattferguson/chip8-emulator"
+repository = "https://github.com/wyattferguson/chip8-emulator.git"
+documentation = "https://github.com/wyattferguson/chip8-emulator"
+issues = "https://github.com/wyattferguson/chip8-emulator/issues"
 
-[tool.poetry.scripts]
-test = "my_package.log_revision:start"
+[tool.taskipy.tasks]
+format = "ruff format ./chip8/"
+lint = "ruff check --fix ./chip8/ && mypy ./chip8/"
+tests = "pytest --verbose --color=yes tests"
+typecheck = "mypy ./chip8/"
+run = "uv run ./chip8/chip8.py"
+
+[tool.ruff]
+line-length = 100
+indent-width = 4
+format.indent-style = "space"
+target-version = "py312"
+lint.unfixable = ["F401"] # Disable fix for unused imports
+src = ["chip8", "tests"]
+
+[tool.mypy]
+packages = ["chip8"]
+python_version = "3.12"
+disable_error_code = 'import-untyped'
+implicit_reexport = false
+show_error_codes = true
+strict = true

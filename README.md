@@ -11,41 +11,39 @@ This is my crack at creating a basic Chip-8 emulator as a learning exercise befo
 
 The current version v0.2 of this emulator was just to clean up some old bugs and to add testing in preperation for a other larger emulator builds down the line.
 
-## Installation & How To Use
+## Development Setup
 
-Installation is pretty straight forward, Im using [Poetry](https://python-poetry.org/docs/) to manage everything.
+Installation is pretty straight forward, Im using [UV](https://docs.astral.sh/uv/) to manage everything.
 
-First if you dont Poetry installed run this:
-
-```
-pipx install poetry
-```
-
-Then install the dependencies with:
+To get it all running from scratch:
 
 ```
-poetry install
-```
+# spin up a virtual enviroment
+uv venv
 
-By default the emulator will load the walk.ch8 demo, which has a simple sprite moving around the screen with the W,A,S,D keys.
+# activate virtual enviroment
+.venv\Scripts\activate
 
-```
-poetry run python ./chip8/chip8.py
+# install all the cool dependancies
+uv sync
 
-// You can pass another rom with the -r flag
+# Run the default rom (walk.ch8)
+task run
 
-poetry run python ./chip8/chip8.py -r ./roms/tank.ch8
+# You can pass another rom with the -r flag
+task run -r ./roms/tank.ch8
 
-// The screen scale can be adjusted with the -s flag (ie. -s 15 will scale is 15x the original resolution of 64x32)
+# The screen scale can be adjusted with the -s flag (ie. -s 15 will scale is 15x the original resolution of 64x32)
+task run -s 15
 
-poetry run python ./chip8/chip8.py -s 15
+# lint source
+task lint
 
-```
+# format source with ruff
+task format
 
-To run basic tests for the CPU and screen use:
-
-```
-poetry run pytest
+# run basic battery of pytests
+task tests
 ```
 
 ## Specifications
@@ -213,9 +211,11 @@ Z 	X 	C 	V
 Created by [Wyatt Ferguson](https://wyattf.bsky.social)
 
 For any questions or comments heres how you can reach me:
+
 ### :mailbox_with_mail: Email me at [wyattxdev@duck.com](wyattxdev@duck.com)
+
 ### :tropical_drink: Follow on [BlueSky @wyattf](https://wyattf.bsky.social)
 
-
 If you find this useful and want to tip me a little coffee money:
+
 ### :coffee: [Buy Me A Coffee](https://www.buymeacoffee.com/wyattferguson)

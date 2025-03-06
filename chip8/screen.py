@@ -1,45 +1,38 @@
 import pygame as pg
 
+from config import BLACK, PIXEL_HEIGHT, PIXEL_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH, WHITE
 
-class Screen(object):
+
+class Screen:
     """Pygame Screen."""
 
-    WIDTH = 64
-    HEIGHT = 32
-    PIXEL_WIDTH = 8
-    PIXEL_HEIGHT = 8
+    matrix: list[list[int]] = []  # pixel representation of display
 
-    # Monochrome colors
-    BLACK = (0, 0, 0)
-    WHITE = (255, 255, 255)
-
-    matrix = []  # pixel representation of display
-
-    def __init__(self, scaler: int = 10):
-        self.sprite_width = self.PIXEL_WIDTH * scaler
-        self.sprite_height = self.PIXEL_HEIGHT * scaler
+    def __init__(self, scaler: int = 10) -> None:
+        self.sprite_width = PIXEL_WIDTH * scaler
+        self.sprite_height = PIXEL_HEIGHT * scaler
         self.scaler = scaler
 
-        self.screen = pg.display.set_mode((self.WIDTH * scaler, self.HEIGHT * scaler))
+        self.screen = pg.display.set_mode((SCREEN_WIDTH * scaler, SCREEN_HEIGHT * scaler))
         self.clear()
 
     def set_pixel(self, x: int = 0, y: int = 0) -> bool:
-        x %= self.WIDTH
-        y %= self.HEIGHT
+        x %= SCREEN_WIDTH
+        y %= SCREEN_HEIGHT
 
         self.matrix[y][x] ^= 1
 
         # was a pixel erased
         return not self.matrix[y][x]
 
-    def clear(self):
-        self.matrix = [[0 for x in range(self.WIDTH)] for y in range(self.HEIGHT)]
+    def clear(self) -> None:
+        self.matrix = [[0 for x in range(SCREEN_WIDTH)] for y in range(SCREEN_HEIGHT)]
         pg.display.flip()
 
-    def update(self):
-        for y in range(self.HEIGHT):
-            for x in range(self.WIDTH):
-                color = self.WHITE if self.matrix[y][x] else self.BLACK
+    def update(self) -> None:
+        for y in range(SCREEN_HEIGHT):
+            for x in range(SCREEN_WIDTH):
+                color = WHITE if self.matrix[y][x] else BLACK
                 pg.draw.rect(
                     self.screen,
                     color,
