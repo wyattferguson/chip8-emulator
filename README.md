@@ -1,6 +1,6 @@
 ![chip8pong](https://i.imgur.com/MdyWkCT.png)
 
-# :joystick: Chip-8 Emulator
+# :robot: Chip-8 Emulator
 
 This is my crack at creating a basic Chip-8 emulator as a learning exercise before moving onto more complicated systems. Its a great learning system since it only has 34 instructions and a simple memory layout. A few notes about my project:
 
@@ -11,7 +11,7 @@ This is my crack at creating a basic Chip-8 emulator as a learning exercise befo
 
 The current version v0.2 of this emulator was just to clean up some old bugs and to add testing in preperation for a other larger emulator builds down the line.
 
-# Installation & How To Use
+## Installation & How To Use
 
 Installation is pretty straight forward, Im using [Poetry](https://python-poetry.org/docs/) to manage everything.
 
@@ -48,7 +48,7 @@ To run basic tests for the CPU and screen use:
 poetry run pytest
 ```
 
-# Specifications
+## Specifications
 
 - Memory: CHIP-8 has direct access to up to 4 kilobytes of RAM
 - Display: 64 x 32 pixels (or 128 x 64 for SUPER-CHIP) monochrome, ie. black or white
@@ -60,7 +60,7 @@ poetry run pytest
 - 16 8-bit (one byte) general-purpose variable registers numbered 0 through F hexadecimal, ie. 0 through 15 in decimal, called V0 through VF
 - VF is also used as a flag register; many instructions will set it to either 1 or 0 based on some rule, for example using it as a carry flag
 
-# Memory
+## Memory
 
 The memory should be 4 kB (4 kilobytes, ie. 4096 bytes) large. CHIP-8’s index register and program counter can only address 12 bits (conveniently), which is 4096 addresses.
 
@@ -68,7 +68,7 @@ All the memory is RAM and should be considered to be writable. CHIP-8 games can,
 
 The first CHIP-8 interpreter (on the COSMAC VIP computer) was also located in RAM, from address 000 to 1FF. It would expect a CHIP-8 program to be loaded into memory after it, starting at address 200 (512 in decimal)
 
-## Memory Map
+### Memory Map
 
     +---------------+= 0xFFF (4095) End of Chip-8 RAM
     |               |
@@ -93,7 +93,7 @@ The first CHIP-8 interpreter (on the COSMAC VIP computer) was also located in RA
     |  interpreter  |
     +---------------+= 0x000 (0) Start of Chip-8 RAM
 
-# Font
+## Font
 
 The CHIP-8 emulator should have a built-in font, with sprite data representing the hexadecimal numbers from 0 through F. Each font character should be 4 pixels wide by 5 pixels tall. These font sprites are drawn just like regular sprites (see below).
 
@@ -116,7 +116,7 @@ The CHIP-8 emulator should have a built-in font, with sprite data representing t
 0xF0, 0x80, 0xF0, 0x80, 0x80  // F
 ```
 
-# Display
+## Display
 
 The display is 64 pixels wide and 32 pixels tall. Each pixel can be on or off. In other words, each pixel is a boolean value, or a bit.
 
@@ -131,17 +131,17 @@ Original interpreters updated the display at 60 Hz (60 FPS)
 
 The drawing instruction DXYN in short, it is used to draw a “sprite” on the screen. Each sprite consists of 8-bit bytes, where each bit corresponds to a horizontal pixel; sprites are between 1 and 15 bytes tall. They’re drawn to the screen by treating all 0 bits as transparent, and all the 1 bits will “flip” the pixels in the locations of the screen that it’s drawn to. (You might recognize this as logical XOR.)
 
-# Stack
+## Stack
 
 CHIP-8 has a stack (a common “last in, first out” data structure where you can either “push” data to it or “pop” the last piece of data you pushed). You can represent it however you’d like; a stack if your programming language has it, or an array. CHIP-8 uses it to call and return from subroutines (“functions”) and nothing else, so you will be saving addresses there; 16-bit (or really only 12-bit) numbers.
 
-# Timers
+## Timers
 
 There are two separate timer registers: The delay timer and the sound timer. They both work the same way; they’re one byte in size, and as long as their value is above 0, they should be decremented by one 60 times per second (ie. at 60 Hz). This is independent of the speed of the fetch/decode/execute loop below.
 
 The sound timer is special in that it should make the computer “beep” as long as it’s above 0.
 
-# Keypad
+## Keypad
 
 The earliest computers that CHIP-8 were used with had hexadecimal keypads. These had 16 keys, labelled 0 through F, and were arranged in a 4x4 grid.
 
@@ -161,7 +161,7 @@ A 	S 	D 	F
 Z 	X 	C 	V
 ```
 
-# Basic Instructions
+## Basic Instructions
 
     00E0 - CLS
     00EE - RET
@@ -199,7 +199,7 @@ Z 	X 	C 	V
     Fx55 - LD [I], Vx
     Fx65 - LD Vx, [I]
 
-# References
+## References
 
 - Guide to making a CHIP-8 emulator ([https://tobiasvl.github.io/blog/write-a-chip-8-emulator/](https://tobiasvl.github.io/blog/write-a-chip-8-emulator/))
 - Octo CHIP-8 Assember - ([https://johnearnest.github.io/Octo/](https://johnearnest.github.io/Octo/))
@@ -208,7 +208,7 @@ Z 	X 	C 	V
 - Chip-8 Test Rom ([https://github.com/corax89/chip8-test-rom](https://github.com/corax89/chip8-test-rom))
 - Chip-8 Variant Opcode Table ([https://chip8.gulrak.net/](https://chip8.gulrak.net/))
 
-## :postbox: Contact & Support
+## Contact & Support
 
 Created by [Wyatt Ferguson](https://wyattf.bsky.social)
 
