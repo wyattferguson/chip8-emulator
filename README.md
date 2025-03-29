@@ -206,6 +206,10 @@ Z 	X 	C 	V
 - Chip-8 Test Rom ([https://github.com/corax89/chip8-test-rom](https://github.com/corax89/chip8-test-rom))
 - Chip-8 Variant Opcode Table ([https://chip8.gulrak.net/](https://chip8.gulrak.net/))
 
+- ## License
+
+[MIT license](https://github.com/wyattferguson/chip8-emulator/blob/master/LICENSE)
+
 ## Contact & Support
 
 Created by [Wyatt Ferguson](https://github.com/wyattferguson)
