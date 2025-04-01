@@ -107,7 +107,7 @@ class CPU:
         if self.sound_timer > 0:
             self.sound_timer -= 1
 
-        for i in range(10):
+        for _ in range(10):
             self.decode()
             self.execute()
             self.pc += 2  # move program counter up 2 bytes to next instruction
@@ -200,9 +200,8 @@ class CPU:
         for i in range(self.n):
             sprite = self.ram[self.i + i]
             for j in range(8):
-                if sprite & 0x80:
-                    if self.screen.set_pixel(self.v[self.x] + j, self.v[self.y] + i):
-                        self.v[0xF] = 1
+                if sprite & 0x80 and self.screen.set_pixel(self.v[self.x] + j, self.v[self.y] + i):
+                    self.v[0xF] = 1
 
                 sprite <<= 1
 
@@ -243,6 +242,6 @@ class CPU:
 
     def LOAD_BCD(self) -> None:
         """Store BCD representation of Vx in memory locations I, I+1, and I+2."""
-        bcd_value = "{:03d}".format(self.v[self.x])
+        bcd_value = f"{self.v[self.x]:03d}"
         for n in range(3):
             self.ram[self.i + n] = int(bcd_value[n])

@@ -6,7 +6,7 @@ license = {text = "MIT License"}
 keywords = ["chip8", "emulator", "vintage cpu", "cpu", "python"]
 readme = "README.md"
 authors = [
-    { name = "wyattferguson", email = "wyattf@gmail.com" }
+    { name = "wyattferguson", email = "wyattxdev@duck.com" }
 ]
 requires-python = ">=3.12"
 
@@ -50,8 +50,21 @@ line-length = 100
 indent-width = 4
 format.indent-style = "space"
 target-version = "py312"
-lint.unfixable = ["F401"] # Disable fix for unused imports
 src = ["chip8", "tests"]
+
+[tool.ruff.lint]
+pydocstyle.convention = "google"
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "B",  # flake8-bugbear
+    "SIM", # flake8-simplify
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+]
+ignore = ["F401"] # Disable fix for unused imports
 
 [tool.mypy]
 packages = ["chip8"]
