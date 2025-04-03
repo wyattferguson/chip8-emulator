@@ -1,15 +1,17 @@
 import random
 
-from keyboard import Keyboard
-from opcodes import OpCode, opcodes
-from screen import Screen
+from ._config import FONT, MEMORY_SIZE, REGISTERS_COUNT
+from ._exceptions import DecodeError, ExecuteError, FetchError, RomError
+from .keyboard import Keyboard
+from .opcodes import OpCode, opcodes
+from .screen import Screen
 
 
 class CPU:
     """Chip8 CPU"""
 
-    ram: bytearray = bytearray([0] * 4096)  # 4kb of memory
-    v: bytearray = bytearray([0] * 16)  # 16 8-Bit Registers - V0 to VF
+    ram: bytearray = bytearray([0] * MEMORY_SIZE)  # 4kb of memory
+    v: bytearray = bytearray([0] * REGISTERS_COUNT)  # 16 8-Bit Registers - V0 to VF
 
     i: int = 0  # 12bit register
     x: int = 0  # 4-bit register
@@ -29,9 +31,9 @@ class CPU:
     def __init__(self, rom: str, screen: Screen, keyboard: Keyboard) -> None:
         self.keyboard: Keyboard = keyboard
         self.screen: Screen = screen
-        self.load_font()
+        self.ram[0 : len(FONT)] = FONT  # load font into memory
         self.load_rom(rom)
-        self.opcode = 0
+        self.opcode: int = 0
 
     def load_rom(self, rom: str) -> None:
         """copy ROM into memory"""
@@ -40,45 +42,22 @@ class CPU:
                 rom_data = rom_ptr.read()
                 self.ram[self.pc : self.pc + len(rom_data)] = bytearray(rom_data)
         except Exception as e:
-            print("Error loading ROM: ", e)
-            exit()
-
-    # fmt: off
-    def load_font(self) -> None:
-        """copy Chip8 sprite font into memory"""
-        font = [
-            0xF0, 0x90, 0x90, 0x90, 0xF0,   # 0
-            0x20, 0x60, 0x20, 0x20, 0x70,   # 1
-            0xF0, 0x10, 0xF0, 0x80, 0xF0,   # 2
-            0xF0, 0x10, 0xF0, 0x10, 0xF0,   # 3
-            0x90, 0x90, 0xF0, 0x10, 0x10,   # 4
-            0xF0, 0x80, 0xF0, 0x10, 0xF0,   # 5
-            0xF0, 0x80, 0xF0, 0x90, 0xF0,   # 6
-            0xF0, 0x10, 0x20, 0x40, 0x40,   # 7
-            0xF0, 0x90, 0xF0, 0x90, 0xF0,   # 8
-            0xF0, 0x90, 0xF0, 0x10, 0xF0,   # 9
-            0xF0, 0x90, 0xF0, 0x90, 0x90,   # A
-            0xE0, 0x90, 0xE0, 0x90, 0xE0,   # B
-            0xF0, 0x80, 0x80, 0x80, 0xF0,   # C
-            0xE0, 0x90, 0x90, 0x90, 0xE0,   # D
-            0xF0, 0x80, 0xF0, 0x80, 0xF0,   # E
-            0xF0, 0x80, 0xF0, 0x80, 0x80    # F
-        ]
-        self.ram[0 : len(font)] = font
-    # fmt: on
+            raise RomError(f"Unable to load ROM: {rom} - {e}") from e
 
     def decode(self) -> None:
         """Retreive and decode next opcode"""
-
-        # Every opcode is 2 bytes long, shift the first 8 bits left
-        # Combine it with the next 8 bits to make a full opcode
-        self.opcode = (self.ram[self.pc] << 8) | self.ram[self.pc + 1]
-        self.x = (self.opcode & 0x0F00) >> 8  # lower 4 bits of the high byte
-        self.y = (self.opcode & 0x00F0) >> 4  # upper 4 bits of the low byte
-        self.n = self.opcode & 0x000F  # lowest 4 bits of the low byte
-        self.addr = self.opcode & 0x0FFF  # lowest 12 bits
-        self.kk = self.opcode & 0x00FF  # lowest 8 bits
-        self.op_group = self.opcode & 0xF000
+        try:
+            # Every opcode is 2 bytes long, shift the first 8 bits left
+            # Combine it with the next 8 bits to make a full opcode
+            self.opcode = (self.ram[self.pc] << 8) | self.ram[self.pc + 1]
+            self.x = (self.opcode & 0x0F00) >> 8  # lower 4 bits of the high byte
+            self.y = (self.opcode & 0x00F0) >> 4  # upper 4 bits of the low byte
+            self.n = self.opcode & 0x000F  # lowest 4 bits of the low byte
+            self.addr = self.opcode & 0x0FFF  # lowest 12 bits
+            self.kk = self.opcode & 0x00FF  # lowest 8 bits
+            self.op_group = self.opcode & 0xF000
+        except Exception as e:
+            raise DecodeError(f"Unable to decode opcode: {self.opcode} - {e}") from e
 
     def execute(self) -> None:
         """Execute current opcode"""
@@ -87,17 +66,15 @@ class CPU:
                 self.op_group = self.opcode & 0xF0FF
             elif self.op_group == 0x8000:
                 self.op_group = self.opcode & 0xF00F
-
-            # last_inst = self.cur_inst
             self.cur_inst = opcodes[self.op_group]
-            # if last_inst != self.cur_inst:
-            #     print(self.cur_inst, self.v[1], self.v[2])
             if self.cur_inst.args:
                 getattr(self, self.cur_inst.call)(*self.cur_inst.args)
             else:
                 getattr(self, self.cur_inst.call)()
-        except Exception:
-            pass
+        except Exception as e:
+            raise ExecuteError(
+                f"Execution Error: {self.opcode} / {self.op_group} / {self.cur_inst} - {e}"
+            ) from e
 
     def cycle(self) -> None:
         """Next CPU instruction"""
@@ -107,7 +84,7 @@ class CPU:
         if self.sound_timer > 0:
             self.sound_timer -= 1
 
-        for _ in range(10):
+        for _ in range(5):
             self.decode()
             self.execute()
             self.pc += 2  # move program counter up 2 bytes to next instruction

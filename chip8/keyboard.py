@@ -1,10 +1,12 @@
 import pygame as pg
 
+from ._exceptions import KeypadError
+
 
 class Keyboard:
     """16 Key hex keyboard ranging 1 to V."""
 
-    def __init__(self) -> None:
+    def __init__(self, debug: bool = False) -> None:
         self.key_map = {
             49: 0x1,  # 1
             50: 0x2,  # 2
@@ -24,6 +26,7 @@ class Keyboard:
             118: 0xF,  # V
         }
         self.pressed_keys: list[int] = [0] * 16
+        self.debug = debug
 
     def is_key_pressed(self, key_code: int) -> int:
         return self.pressed_keys[key_code]
@@ -38,5 +41,7 @@ class Keyboard:
                 try:
                     key = self.key_map[event.key]
                     self.pressed_keys[key] = not self.pressed_keys[key]
-                except Exception:
+                except Exception as e:
+                    if self.debug:
+                        raise KeypadError(f"Key press error: {event.key} :: {e}") from e
                     pass

@@ -1,47 +1,28 @@
-import argparse
-
 import pygame as pg
 
-from cpu import CPU
-from keyboard import Keyboard
-from screen import Screen
+from ._config import DEFAULT_ROM, DEFAULT_SCALE, TICK_RATE
+from .cpu import CPU
+from .keyboard import Keyboard
+from .screen import Screen
 
 
-def run(rom: str = "test.ch8", screen_scale: int = 10) -> None:
-    pg.init()
-    pg.display.set_caption(f"👾 Chip8 Emulator :: {args.rom} :: {args.scale}x Scale")
+class Chip8:
+    def __init__(
+        self, rom: str = DEFAULT_ROM, screen_scale: int = DEFAULT_SCALE, debug: bool = False
+    ) -> None:
+        self.rom = rom
+        self.screen_scale = screen_scale
+        self.debug = debug
+        self.screen = Screen(self.screen_scale)
+        self.keyboard = Keyboard()
+        self.cpu = CPU(self.rom, self.screen, self.keyboard)
+        self.clock = pg.time.Clock()
 
-    screen = Screen(screen_scale)
-    keyboard = Keyboard()
-    cpu = CPU(rom, screen, keyboard)
+    def run(self) -> None:
+        pg.init()
+        pg.display.set_caption(f"👾 Chip8 Emulator :: {self.rom} :: {self.screen_scale}x Scale")
 
-    clock = pg.time.Clock()
-
-    while True:
-        clock.tick(60)
-        cpu.cycle()
-        screen.update()
-        keyboard.update()
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument(
-        "-r",
-        "--rom",
-        default="./roms/walk.ch8",
-        help="ROM file to run (.ch8 file).",
-    )
-
-    parser.add_argument(
-        "-s",
-        "--scale",
-        default="20",
-        type=int,
-        help="Scale multiplier for the screen size.",
-    )
-
-    args = parser.parse_args()
-    print(f"👾 Chip8 Emulator Running :: {args.rom} @ {args.scale}x resolution")
-    run(args.rom, args.scale)
+        while True:
+            self.cpu.cycle()
+            self.screen.update()
+            self.keyboard.update()

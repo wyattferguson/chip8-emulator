@@ -1,6 +1,14 @@
 import pygame as pg
 
-from config import BLACK, PIXEL_HEIGHT, PIXEL_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH, WHITE
+from ._config import (
+    BLACK,
+    DEFAULT_SCALE,
+    PIXEL_HEIGHT,
+    PIXEL_WIDTH,
+    SCREEN_HEIGHT,
+    SCREEN_WIDTH,
+    WHITE,
+)
 
 
 class Screen:
@@ -8,7 +16,7 @@ class Screen:
 
     matrix: list[list[int]] = []  # pixel representation of display
 
-    def __init__(self, scaler: int = 10) -> None:
+    def __init__(self, scaler: int = DEFAULT_SCALE) -> None:
         self.sprite_width = PIXEL_WIDTH * scaler
         self.sprite_height = PIXEL_HEIGHT * scaler
         self.scaler = scaler

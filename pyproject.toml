@@ -1,6 +1,12 @@
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+
 [project]
 name = "chip8-emulator"
-version = "1.0.2"
+dynamic = ["version"]
 description = "The Chip8 is a very simple system, originally created as an interpretter for an 8 bit CPU in the 1970s."
 license = {text = "MIT License"}
 keywords = ["chip8", "emulator", "vintage cpu", "cpu", "python"]
@@ -21,6 +27,7 @@ classifiers = [
     "License :: OSI Approved :: MIT License"
 ]
 dependencies = [
+    "click>=8.1.8",
     "pygame>=2.6.1",
 ]
 
@@ -38,12 +45,19 @@ repository = "https://github.com/wyattferguson/chip8-emulator.git"
 documentation = "https://github.com/wyattferguson/chip8-emulator"
 issues = "https://github.com/wyattferguson/chip8-emulator/issues"
 
+[project.scripts]
+chip8 = "chip8.__main__:run"
+
+[tool.hatch]
+version.path = "chip8/__init__.py"
+build.targets.wheel.packages = ["chip8"]
+
 [tool.taskipy.tasks]
 format = "ruff format ./chip8/"
 lint = "ruff check --fix ./chip8/ && mypy ./chip8/"
 tests = "pytest --verbose --color=yes tests"
 typecheck = "mypy ./chip8/"
-run = "uv run ./chip8/chip8.py"
+run = "chip8"
 
 [tool.ruff]
 line-length = 100
