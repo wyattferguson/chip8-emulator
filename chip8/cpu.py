@@ -249,7 +249,4 @@ class CPU:
         bcd_value = f"{self.v[self.x]:03d}"
         for n in range(3):
             self.ram[self.i + n] = int(bcd_value[n])
-        """Store BCD representation of Vx in memory locations I, I+1, and I+2."""
-        bcd_value = f"{self.v[self.x]:03d}"
-        for n in range(3):
-            self.ram[self.i + n] = int(bcd_value[n])
+
