@@ -1,14 +1,14 @@
 import random
 
-from ._config import FONT, MEMORY_SIZE, REGISTERS_COUNT
-from ._exceptions import DecodeError, ExecuteError, FetchError, RomError
-from .keyboard import Keyboard
-from .opcodes import OpCode, opcodes
-from .screen import Screen
+from chip8._config import FONT, MEMORY_SIZE, REGISTERS_COUNT
+from chip8._exceptions import DecodeError, ExecuteError, RomError
+from chip8.keypad import Keypad
+from chip8.opcodes import OpCode, opcodes
+from chip8.screen import Screen
 
 
 class CPU:
-    """Chip8 CPU"""
+    """Chip8 CPU."""
 
     ram: bytearray = bytearray([0] * MEMORY_SIZE)  # 4kb of memory
     v: bytearray = bytearray([0] * REGISTERS_COUNT)  # 16 8-Bit Registers - V0 to VF
@@ -28,24 +28,24 @@ class CPU:
 
     pc: int = 0x200  # program counter, starts at 0x200 in ram
 
-    def __init__(self, rom: str, screen: Screen, keyboard: Keyboard) -> None:
-        self.keyboard: Keyboard = keyboard
+    def __init__(self, rom: str, screen: Screen, keypad: Keypad) -> None:
+        self.keypad: Keypad = keypad
         self.screen: Screen = screen
         self.ram[0 : len(FONT)] = FONT  # load font into memory
         self.load_rom(rom)
         self.opcode: int = 0
 
     def load_rom(self, rom: str) -> None:
-        """copy ROM into memory"""
+        """Copy ROM into memory."""
         try:
             with open(rom, "rb") as rom_ptr:
-                rom_data = rom_ptr.read()
+                rom_data: bytes = rom_ptr.read()
                 self.ram[self.pc : self.pc + len(rom_data)] = bytearray(rom_data)
         except Exception as e:
             raise RomError(f"Unable to load ROM: {rom} - {e}") from e
 
     def decode(self) -> None:
-        """Retreive and decode next opcode"""
+        """Retreive and decode next opcode."""
         try:
             # Every opcode is 2 bytes long, shift the first 8 bits left
             # Combine it with the next 8 bits to make a full opcode
@@ -60,7 +60,7 @@ class CPU:
             raise DecodeError(f"Unable to decode opcode: {self.opcode} - {e}") from e
 
     def execute(self) -> None:
-        """Execute current opcode"""
+        """Execute current opcode."""
         try:
             if self.op_group in [0xE000, 0xF000, 0x0]:
                 self.op_group = self.opcode & 0xF0FF
@@ -73,11 +73,11 @@ class CPU:
                 getattr(self, self.cur_inst.call)()
         except Exception as e:
             raise ExecuteError(
-                f"Execution Error: {self.opcode} / {self.op_group} / {self.cur_inst} - {e}"
+                f"Execution Error: {self.opcode} / {self.op_group} / {self.cur_inst} - {e}",
             ) from e
 
     def cycle(self) -> None:
-        """Next CPU instruction"""
+        """Next CPU instruction."""
         if self.delay_timer > 0:
             self.delay_timer -= 1
 
@@ -89,135 +89,166 @@ class CPU:
             self.execute()
             self.pc += 2  # move program counter up 2 bytes to next instruction
 
-    def CLS(self) -> None:
-        """Clear screen"""
+    def cls(self) -> None:
+        """Clear screen."""
         self.screen.clear()
 
-    def RET(self) -> None:
+    def ret(self) -> None:
+        """Return from subroutine."""
         self.pc = self.stack.pop()
 
-    def JMP(self) -> None:
+    def jmp(self) -> None:
+        """Jump to address."""
         self.pc = self.addr - 2
 
-    def SUB(self) -> None:
+    def sub(self) -> None:
+        """Call subroutine."""
         self.stack.append(self.pc)
         self.pc = self.addr - 2
 
-    def SE_VX(self) -> None:
+    def se_vx(self) -> None:
+        """Skip next instruction if Vx == kk."""
         if self.v[self.x] == self.kk:
             self.pc += 2
 
-    def SNE_VX(self) -> None:
+    def sne_vx(self) -> None:
+        """Skip next instruction if Vx != kk."""
         if self.v[self.x] != self.kk:
             self.pc += 2
 
-    def SE_VX_VY(self) -> None:
+    def se_vx_vy(self) -> None:
+        """Skip next instruction if Vx == Vy."""
         if self.v[self.x] == self.v[self.y]:
             self.pc += 2
 
-    def LOAD_VX(self) -> None:
+    def load_vx(self) -> None:
+        """Set Vx = kk."""
         self.v[self.x] = self.kk
 
-    def ADD_VX_KK(self) -> None:
+    def add_vx_kk(self) -> None:
+        """Set Vx = Vx + kk."""
         self.v[self.x] = (self.v[self.x] + self.kk) % 256
 
-    def SET_VX_VY(self) -> None:
+    def set_vx_vy(self) -> None:
+        """Set Vx = Vy."""
         self.v[self.x] = self.v[self.y]
 
-    def OR_VX_VY(self) -> None:
+    def or_vx_vy(self) -> None:
+        """Set Vx = Vx OR Vy."""
         self.v[self.x] |= self.v[self.y]
 
-    def AND_VX_VY(self) -> None:
+    def and_vx_vy(self) -> None:
+        """Set Vx = Vx AND Vy."""
         self.v[self.x] &= self.v[self.y]
 
-    def XOR_VX_VY(self) -> None:
+    def xor_vx_vy(self) -> None:
+        """Set Vx = Vx XOR Vy."""
         self.v[self.x] ^= self.v[self.y]
 
-    def ADD_VX_VY(self) -> None:
-        """Vx = Vx + Vy with carry"""
-        sum = self.v[self.x] + self.v[self.y]
-        self.v[0xF] = 1 if sum > 255 else 0  # set carry flag
-        self.v[self.x] = sum % 256
+    def add_vx_vy(self) -> None:
+        """Vx = Vx + Vy with carry."""
+        v_sum: int = self.v[self.x] + self.v[self.y]
+        self.v[0xF] = 1 if v_sum > 255 else 0  # set carry flag
+        self.v[self.x] = v_sum % 256
 
-    def SUB_VX_VY(self) -> None:
-        """Vx = Vx - Vy with underflow"""
-        sum = self.v[self.x] - self.v[self.y]
-        self.v[0xF] = 1 if sum > 0 else 0  # set underflow flag
-        self.v[self.x] = sum % 256
+    def sub_vx_vy(self) -> None:
+        """Vx = Vx - Vy with underflow."""
+        v_diff: int = self.v[self.x] - self.v[self.y]
+        self.v[0xF] = 1 if v_diff > 0 else 0  # set underflow flag
+        self.v[self.x] = v_diff % 256
 
-    def SUBN_VX_VY(self) -> None:
-        """Vx = Vx - Vy with underflow"""
-        sum = self.v[self.y] - self.v[self.x]
-        self.v[0xF] = 1 if sum > 0 else 0  # set underflow flag
-        self.v[self.x] = sum % 256
+    def subn_vx_vy(self) -> None:
+        """Vx = Vy - Vx with underflow."""
+        v_diff: int = self.v[self.y] - self.v[self.x]
+        self.v[0xF] = 1 if v_diff > 0 else 0  # set underflow flag
+        self.v[self.x] = v_diff % 256
 
-    def SHR_VX(self) -> None:
+    def shr_vx(self) -> None:
+        """Set Vx = Vx SHR 1."""
         self.v[0xF] = self.v[self.x] & 0x1
         self.v[self.x] >>= 1
 
-    def SHL_VX(self) -> None:
+    def shl_vx(self) -> None:
+        """Set Vx = Vx SHL 1."""
         self.v[0xF] = self.v[self.x] & 0x1
         self.v[self.x] <<= 1
 
-    def SNE_VX_VY(self) -> None:
+    def sne_vx_vy(self) -> None:
+        """Skip next instruction if Vx != Vy."""
         if self.v[self.x] != self.v[self.y]:
             self.pc += 2
 
-    def LOAD_I(self) -> None:
+    def load_i(self) -> None:
+        """Set I = addr."""
         self.i = self.addr
 
-    def JMP_V0_ADDR(self) -> None:
+    def jmp_v0_addr(self) -> None:
+        """Jump to location addr + V0."""
         self.pc = self.addr + self.v[0]
 
-    def RND(self) -> None:
+    def rnd(self) -> None:
+        """Set Vx = random byte AND kk."""
         self.v[self.x] = random.randint(0, 255) & self.kk
 
-    def DRAW(self) -> None:
+    def draw(self) -> None:
+        """Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision."""
         self.v[0xF] = 0
         for i in range(self.n):
-            sprite = self.ram[self.i + i]
+            sprite: int = self.ram[self.i + i]
             for j in range(8):
-                if sprite & 0x80 and self.screen.set_pixel(self.v[self.x] + j, self.v[self.y] + i):
+                if sprite & 0x80 and self.screen.flip_pixel(self.v[self.x] + j, self.v[self.y] + i):
                     self.v[0xF] = 1
 
                 sprite <<= 1
 
-    def SKP_VX(self, equal: bool) -> None:
-        if self.keyboard.pressed_keys[self.v[self.x] & 0xF] == equal:
+    def skp_vx(self, equal: bool) -> None:
+        """Skip next instruction if key with the value of Vx is pressed/not pressed."""
+        if self.keypad.pressed_keys[self.v[self.x] & 0xF] == equal:
             self.pc += 2
 
-    def WAIT(self) -> None:
-        if not any(self.keyboard.pressed_keys):
+    def wait(self) -> None:
+        """Wait for a key press, store the value of the key in Vx."""
+        if not any(self.keypad.pressed_keys):
             self.pc -= 2
             return
 
-        self.v[self.x] = self.keyboard.pressed_keys.index(True)
+        self.v[self.x] = self.keypad.pressed_keys.index(True)
 
-    def LOAD_DT_VX(self) -> None:
+    def load_dt_vx(self) -> None:
+        """Set delay timer = Vx."""
         self.delay_timer = self.v[self.x]
 
-    def LOAD_ST_VX(self) -> None:
+    def load_st_vx(self) -> None:
+        """Set sound timer = Vx."""
         self.sound_timer = self.v[self.x]
 
-    def LOAD_VX_DT(self) -> None:
+    def load_vx_dt(self) -> None:
+        """Set Vx = delay timer."""
         self.v[self.x] = self.delay_timer
 
-    def ADD_I_VX(self) -> None:
+    def add_i_vx(self) -> None:
+        """Set I = I + Vx."""
         self.i += self.v[self.x]
 
-    def LOAD_VX_I(self) -> None:
+    def load_vx_i(self) -> None:
+        """Read registers V0 through Vx from memory starting at location I."""
         for i in range(self.x + 1):
             self.v[i] = self.ram[self.i + i]
 
-    def LOAD_F_VX(self) -> None:
+    def load_f_vx(self) -> None:
+        """Set I = location of sprite for digit Vx."""
         self.i = self.v[self.x] * 5
 
-    def LOAD_I_VX(self) -> None:
+    def load_i_vx(self) -> None:
         """Store registers V0 through Vx in memory starting at location I."""
         for i in range(self.x + 1):
             self.ram[self.i + i] = self.v[i]
 
-    def LOAD_BCD(self) -> None:
+    def load_bcd(self) -> None:
+        """Store BCD representation of Vx in memory locations I, I+1, and I+2."""
+        bcd_value = f"{self.v[self.x]:03d}"
+        for n in range(3):
+            self.ram[self.i + n] = int(bcd_value[n])
         """Store BCD representation of Vx in memory locations I, I+1, and I+2."""
         bcd_value = f"{self.v[self.x]:03d}"
         for n in range(3):

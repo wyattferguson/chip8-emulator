@@ -1,12 +1,7 @@
 
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
-
 [project]
 name = "chip8-emulator"
-dynamic = ["version"]
+version = "0.2.5"
 description = "The Chip8 is a very simple system, originally created as an interpretter for an 8 bit CPU in the 1970s."
 license = {text = "MIT License"}
 keywords = ["chip8", "emulator", "vintage cpu", "cpu", "python"]
@@ -33,7 +28,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "mypy>=1.15.0",
+    "ty>=0.0.1a6",
     "pytest>=8.3.4",
     "ruff>=0.9.7",
     "taskipy>=1.14.1",
@@ -45,45 +40,60 @@ repository = "https://github.com/wyattferguson/chip8-emulator.git"
 documentation = "https://github.com/wyattferguson/chip8-emulator"
 issues = "https://github.com/wyattferguson/chip8-emulator/issues"
 
+[build-system]
+requires = ["uv_build"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "chip8"
+module-root = ""
+
 [project.scripts]
 chip8 = "chip8.__main__:run"
 
-[tool.hatch]
-version.path = "chip8/__init__.py"
-build.targets.wheel.packages = ["chip8"]
-
 [tool.taskipy.tasks]
-format = "ruff format ./chip8/"
-lint = "ruff check --fix ./chip8/ && mypy ./chip8/"
+format = "ruff format ./src/"
+lint = "ruff check --fix ./src/"
 tests = "pytest --verbose --color=yes tests"
-typecheck = "mypy ./chip8/"
+typecheck = "ty check"
 run = "chip8"
 
 [tool.ruff]
 line-length = 100
+fix = true
 indent-width = 4
 format.indent-style = "space"
 target-version = "py312"
+include = ["*.py"]
 src = ["chip8", "tests"]
 
 [tool.ruff.lint]
 pydocstyle.convention = "google"
-select = [
-    "E",  # pycodestyle errors
-    "W",  # pycodestyle warnings
-    "F",  # pyflakes
-    "I",  # isort
-    "B",  # flake8-bugbear
-    "SIM", # flake8-simplify
-    "C4",  # flake8-comprehensions
-    "UP",  # pyupgrade
+fixable = ["ALL"]
+select = ["ALL"]
+ignore = [
+    "FA102", # Flake8-future-annotations
+    "F401", # Disable fix for unused imports
+    "B904", # Allow raising exceptions without from e
+    "PLR0913", # too many arguments
+    "CPY", # Flake8-copyright
+    "T20", # Flake8-print
+    "ERA", # Eradicate – detects commented-out code
+    "BLE001", # Catch-all exceptions
+    "EM102", # f-strings in exceptions
+    "TRY003", #  long exception messages
+    "D107", # Disable docstring check for __init__
+    "D100", # Disable docstring check for public modules
+    "D105", # Disable docstring check for magic methods
+    "D212", # Disable docstring check for multi-line docstrings
+    "EM101", # Disable f-string check in exceptions
+    "FBT001", # Boolean positional arguments
+    "FBT002", # Default Boolean positional arguments
+    "PTH123", # builtin-open
+    "S311", # pseudo-random numbers
 ]
-ignore = ["F401"] # Disable fix for unused imports
 
-[tool.mypy]
-packages = ["chip8"]
-python_version = "3.12"
-disable_error_code = 'import-untyped'
-implicit_reexport = false
-show_error_codes = true
-strict = true
+[tool.ty]
+src.root = "./chip8"
+environment.python = "./.venv"
+terminal.output-format = "concise"

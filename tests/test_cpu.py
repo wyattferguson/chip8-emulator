@@ -2,20 +2,20 @@ import pygame as pg
 import pytest
 
 from chip8.cpu import CPU
-from chip8.keyboard import Keyboard
+from chip8.keypad import Keypad
 from chip8.screen import Screen
 
-screen_scale = 1
+screen_scale: int = 1
 pg.init()
 pg.display.set_caption("👾 Chip8 Emulator :: Running CPU Tests")
-screen = Screen(screen_scale)
-keyboard = Keyboard()
+screen: Screen = Screen(screen_scale)
+keypad: Keypad = Keypad()
 
 
 def test_registers() -> None:
-    rom = "./roms/registers.ch8"
+    rom: str = "./roms/registers.ch8"
 
-    cpu = CPU(rom, screen, keyboard)
+    cpu = CPU(rom, screen, keypad)
     cpu.cycle()
 
     if hex(cpu.opcode) != "0xa007":

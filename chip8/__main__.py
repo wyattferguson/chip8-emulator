@@ -1,7 +1,7 @@
 import click
 
-from ._config import DEFAULT_ROM, DEFAULT_SCALE
-from .chip8 import Chip8
+from chip8._config import DEFAULT_ROM, DEFAULT_SCALE
+from chip8.chip8 import Chip8
 
 
 @click.command()
@@ -27,6 +27,6 @@ from .chip8 import Chip8
     is_flag=False,
     help="Scale multiplier for the screen size.",
 )
-def run(rom: str = DEFAULT_ROM, debug: bool = False, scale: int = DEFAULT_SCALE) -> None:
+def run(rom: str, debug: bool, scale: int) -> None:
     """Run the Kanban application."""
     Chip8(rom, scale, debug).run()

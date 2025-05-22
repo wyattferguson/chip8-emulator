@@ -1,6 +1,6 @@
 import pygame as pg
 
-from ._config import (
+from chip8._config import (
     BLACK,
     DEFAULT_SCALE,
     PIXEL_HEIGHT,
@@ -12,19 +12,20 @@ from ._config import (
 
 
 class Screen:
-    """Pygame Screen."""
-
-    matrix: list[list[int]] = []  # pixel representation of display
+    """Gameplay Screen."""
 
     def __init__(self, scaler: int = DEFAULT_SCALE) -> None:
         self.sprite_width = PIXEL_WIDTH * scaler
         self.sprite_height = PIXEL_HEIGHT * scaler
         self.scaler = scaler
+        self.matrix: list[list[int]] = []  # pixel representation of display
 
         self.screen = pg.display.set_mode((SCREEN_WIDTH * scaler, SCREEN_HEIGHT * scaler))
         self.clear()
 
-    def set_pixel(self, x: int = 0, y: int = 0) -> bool:
+    def flip_pixel(self, x: int = 0, y: int = 0) -> bool:
+        """Flip pixel at (x, y) coordinates."""
+        # wrap around screen
         x %= SCREEN_WIDTH
         y %= SCREEN_HEIGHT
 
@@ -34,10 +35,12 @@ class Screen:
         return not self.matrix[y][x]
 
     def clear(self) -> None:
-        self.matrix = [[0 for x in range(SCREEN_WIDTH)] for y in range(SCREEN_HEIGHT)]
+        """Blank entire screen."""
+        self.matrix = [[0 for _ in range(SCREEN_WIDTH)] for _ in range(SCREEN_HEIGHT)]
         pg.display.flip()
 
     def update(self) -> None:
+        """Update entire visible screen."""
         for y in range(SCREEN_HEIGHT):
             for x in range(SCREEN_WIDTH):
                 color = WHITE if self.matrix[y][x] else BLACK

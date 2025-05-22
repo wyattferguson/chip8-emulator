@@ -1,24 +1,22 @@
-class ChipException(Exception):
-    """
-    Base class for any Chip8 exception
-    """
+class ChipError(Exception):
+    """Base class for any Chip8 exception."""
 
 
-class FetchError(ChipException):
+class FetchError(ChipError):
     pass
 
 
-class DecodeError(ChipException):
+class DecodeError(ChipError):
     pass
 
 
-class ExecuteError(ChipException):
+class ExecuteError(ChipError):
     pass
 
 
-class RomError(ChipException):
+class RomError(ChipError):
     pass
 
 
-class KeypadError(ChipException):
+class KeypadError(ChipError):
     pass
