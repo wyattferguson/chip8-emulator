@@ -3,7 +3,8 @@ from collections.abc import Callable
 from operator import and_, or_, xor
 
 from chip8._exceptions import DecodeError, ExecuteError
-from chip8.config import CARRY_FLAG, CPU_CYCLES_PER_TICK, MAX_8BIT, PC_INIT, REGISTER_COUNT
+from chip8.audio import Audio
+from chip8.constants import CARRY_FLAG, CPU_CYCLES_PER_TICK, MAX_8BIT, PC_INIT, REGISTER_COUNT
 from chip8.ctypes import OpCode
 from chip8.keypad import Keypad
 from chip8.opcodes import opcodes
@@ -20,10 +21,11 @@ BITWISE_OPERATORS: dict[str, Callable[[int, int], int]] = {
 class CPU:
     """Chip8 CPU."""
 
-    def __init__(self, ram: RAM, screen: Screen, keypad: Keypad) -> None:
+    def __init__(self, ram: RAM, screen: Screen, keypad: Keypad, audio: Audio) -> None:
         self.ram: RAM = ram
         self.keypad: Keypad = keypad
         self.screen: Screen = screen
+        self.audio: Audio = audio
         self.opcode: OpCode
 
         self.v: bytearray = bytearray([0] * REGISTER_COUNT)  # 16 8-Bit Registers - V0 to VF
@@ -37,7 +39,6 @@ class CPU:
         self.op_group: int = 0  # opcode group the instruction belongs to
 
         self.stack: list[int] = []  # Store return addresses when subroutines are called
-        self.sound_timer: int = 0  # Play a beep when > 0
         self.delay_timer: int = 0
 
         self.pc: int = PC_INIT  # program counter, starts at 0x200 in ram
@@ -45,8 +46,6 @@ class CPU:
     def decode(self) -> None:
         """Retreive and decode next opcode."""
         try:
-            # Every opcode is 2 bytes long, shift the first 8 bits left
-            # Combine it with the next 8 bits to make a full opcode
             instruction = (self.ram[self.pc] << 8) | self.ram[self.pc + 1]
             self.x = (instruction & 0x0F00) >> 8  # lower 4 bits of the high byte
             self.y = (instruction & 0x00F0) >> 4  # upper 4 bits of the low byte
@@ -91,7 +90,7 @@ class CPU:
     def decrement_timers(self) -> None:
         """Decrement delay and sound timers."""
         self.delay_timer -= 1 if self.delay_timer > 0 else 0
-        self.sound_timer -= 1 if self.sound_timer > 0 else 0
+        self.audio.update()
 
     def cls(self) -> None:
         """Clear screen."""
@@ -149,19 +148,18 @@ class CPU:
     def add_vx_vy(self) -> None:
         """Vx = Vx + Vy with carry."""
         total = self.v[self.x] + self.v[self.y]
-        self.v[CARRY_FLAG] = total >= MAX_8BIT
-        self.v[self.x] = total % MAX_8BIT
+        self._store_vx_result(total - MAX_8BIT)
 
     def sub_vx_vy(self) -> None:
         """Vx = Vx - Vy with underflow."""
-        self._store_sub_vx_result(self.v[self.x] - self.v[self.y])
+        self._store_vx_result(self.v[self.x] - self.v[self.y])
 
     def subn_vx_vy(self) -> None:
         """Vx = Vy - Vx with underflow."""
-        self._store_sub_vx_result(self.v[self.y] - self.v[self.x])
+        self._store_vx_result(self.v[self.y] - self.v[self.x])
 
-    def _store_sub_vx_result(self, value: int) -> None:
-        """Store a subtraction result in Vx and update VF."""
+    def _store_vx_result(self, value: int) -> None:
+        """Store value in Vx and update VF."""
         self.v[CARRY_FLAG] = value >= 0
         self.v[self.x] = value % MAX_8BIT
 
@@ -222,7 +220,7 @@ class CPU:
 
     def load_st_vx(self) -> None:
         """Set sound timer = Vx."""
-        self.sound_timer = self.v[self.x]
+        self.audio.timer = self.v[self.x]
 
     def load_vx_dt(self) -> None:
         """Set Vx = delay timer."""

@@ -40,5 +40,4 @@ class Keypad:
                 sys.exit()
             elif event.type in (pg.KEYDOWN, pg.KEYUP) and event.key in self.key_map:
                 key: int = self.key_map[event.key]
-                # Explicit key state prevents desync from repeated KEYDOWN events.
                 self.pressed_keys[key] = int(event.type == pg.KEYDOWN)
