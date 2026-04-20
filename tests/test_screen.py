@@ -40,58 +40,59 @@ def patch_screen_pygame(monkeypatch: pytest.MonkeyPatch) -> dict[str, object]:
     return calls
 
 
-def test_screen_initializes_scaled_surface_and_blank_matrix(
+def test_screen_initializes_scaled_surface_and_blank_buffer(
     patch_screen_pygame: dict[str, object],
 ) -> None:
     # Build a screen with the requested scale factor.
     screen = Screen(3)
 
     assert patch_screen_pygame["set_mode"] == (SCREEN_WIDTH * 3, SCREEN_HEIGHT * 3)
-    assert screen.sprite_width == PIXEL_WIDTH * 3
-    assert screen.sprite_height == PIXEL_HEIGHT * 3
-    assert len(screen.matrix) == SCREEN_HEIGHT
-    assert len(screen.matrix[0]) == SCREEN_WIDTH
-    assert all(pixel == 0 for row in screen.matrix for pixel in row)
+    assert len(screen.buffer) == SCREEN_HEIGHT
+    assert len(screen.buffer[0]) == SCREEN_WIDTH
+    assert all(pixel == 0 for row in screen.buffer for pixel in row)
 
 
-def test_flip_pixel_wraps_and_reports_erasure(patch_screen_pygame: dict[str, object]) -> None:
+def test_flip_pixel_wraps_and_reports_erasure() -> None:
     # Wrap coordinates around the display edges when toggling pixels.
     screen = Screen(1)
 
     assert screen.flip_pixel(SCREEN_WIDTH, SCREEN_HEIGHT) is False
-    assert screen.matrix[0][0] == 1
+    assert screen.buffer[0][0] == 1
     assert screen.flip_pixel(SCREEN_WIDTH, SCREEN_HEIGHT) is True
-    assert screen.matrix[0][0] == 0
+    assert screen.buffer[0][0] == 0
 
 
-def test_clear_resets_entire_matrix_and_flips_display(
+def test_clear_resets_entire_buffer_and_flips_display(
     patch_screen_pygame: dict[str, object],
 ) -> None:
     # Restore all pixels to the cleared state.
     screen = Screen(1)
-    screen.matrix[0][0] = 1
-    screen.matrix[5][5] = 1
-    flip_calls = int(patch_screen_pygame["flip_calls"])
+    screen.buffer[0][0] = 1
+    screen.buffer[5][5] = 1
+    update_calls = int(patch_screen_pygame["update_calls"])
 
     screen.clear()
 
-    assert all(pixel == 0 for row in screen.matrix for pixel in row)
-    assert int(patch_screen_pygame["flip_calls"]) == flip_calls + 1
+    assert all(pixel == 0 for row in screen.buffer for pixel in row)
+    assert int(patch_screen_pygame["update_calls"]) == update_calls + 1
 
 
 def test_update_draws_full_frame_and_refreshes_display(
     patch_screen_pygame: dict[str, object],
 ) -> None:
-    # Draw every pixel in the current screen matrix.
+    # Draw every pixel in the current screen buffer.
     screen = Screen(2)
-    screen.matrix[0][0] = 1
+    screen.buffer[0][0] = 1
+    rect_calls_before = len(patch_screen_pygame["rect_calls"])
+    update_calls_before = int(patch_screen_pygame["update_calls"])
 
     screen.update()
 
     rect_calls = patch_screen_pygame["rect_calls"]
     assert isinstance(rect_calls, list)
-    assert len(rect_calls) == SCREEN_WIDTH * SCREEN_HEIGHT
-    assert rect_calls[0][1] == WHITE
-    assert rect_calls[0][2] == [0, 0, PIXEL_WIDTH * 2, PIXEL_HEIGHT * 2]
-    assert rect_calls[1][1] == BLACK
-    assert patch_screen_pygame["update_calls"] == 1
+    assert len(rect_calls) - rect_calls_before == SCREEN_WIDTH * SCREEN_HEIGHT
+    new_rect_calls = rect_calls[rect_calls_before:]
+    assert new_rect_calls[0][1] == WHITE
+    assert new_rect_calls[0][2] == [0, 0, PIXEL_WIDTH * 2, PIXEL_HEIGHT * 2]
+    assert new_rect_calls[1][1] == BLACK
+    assert int(patch_screen_pygame["update_calls"]) == update_calls_before + 1

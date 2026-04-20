@@ -9,16 +9,15 @@ from chip8.config import (
     SCREEN_WIDTH,
     WHITE,
 )
+from chip8.ctypes import Color, ScreenBuffer
 
 
 class Screen:
     """Gameplay Screen."""
 
     def __init__(self, scaler: int = DEFAULT_SCALE) -> None:
-        self.sprite_width = PIXEL_WIDTH * scaler
-        self.sprite_height = PIXEL_HEIGHT * scaler
         self.scaler = scaler
-        self.matrix: list[list[int]] = []  # pixel representation of display
+        self.buffer: ScreenBuffer = self._empty_buffer()  # pixel representation of display
 
         self.screen = pg.display.set_mode((SCREEN_WIDTH * scaler, SCREEN_HEIGHT * scaler))
         self.clear()
@@ -29,29 +28,37 @@ class Screen:
         x %= SCREEN_WIDTH
         y %= SCREEN_HEIGHT
 
-        self.matrix[y][x] ^= 1
+        self.buffer[y][x] ^= 1
 
         # was a pixel erased
-        return not self.matrix[y][x]
+        return not self.buffer[y][x]
+
+    def _empty_buffer(self) -> ScreenBuffer:
+        """Create a blank screen buffer."""
+        return [[0 for _ in range(SCREEN_WIDTH)] for _ in range(SCREEN_HEIGHT)]
 
     def clear(self) -> None:
         """Blank entire screen."""
-        self.matrix = [[0 for _ in range(SCREEN_WIDTH)] for _ in range(SCREEN_HEIGHT)]
-        pg.display.flip()
+        self.buffer = self._empty_buffer()
+        self.update()
+
+    def draw_pixel(self, x: int, y: int) -> None:
+        """Draw a single buffer pixel at (x, y) coordinates."""
+        color: Color = WHITE if self.buffer[y][x] else BLACK
+        pg.draw.rect(
+            self.screen,
+            color,
+            [
+                x * self.scaler,
+                y * self.scaler,
+                PIXEL_WIDTH * self.scaler,
+                PIXEL_HEIGHT * self.scaler,
+            ],
+        )
 
     def update(self) -> None:
         """Update entire visible screen."""
         for y in range(SCREEN_HEIGHT):
             for x in range(SCREEN_WIDTH):
-                color = WHITE if self.matrix[y][x] else BLACK
-                pg.draw.rect(
-                    self.screen,
-                    color,
-                    [
-                        x * self.scaler,
-                        y * self.scaler,
-                        self.sprite_width,
-                        self.sprite_height,
-                    ],
-                )
+                self.draw_pixel(x, y)
         pg.display.update()

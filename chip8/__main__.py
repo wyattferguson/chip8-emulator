@@ -1,7 +1,7 @@
 import click
 
-from chip8._config import DEFAULT_ROM, DEFAULT_SCALE
 from chip8.chip8 import Chip8
+from chip8.config import DEFAULT_ROM, DEFAULT_SCALE
 
 
 @click.command()
@@ -28,5 +28,5 @@ from chip8.chip8 import Chip8
     help="Scale multiplier for the screen size.",
 )
 def run(rom: str, debug: bool, scale: int) -> None:
-    """Run the Kanban application."""
+    """Run the CHIP-8 emulator."""
     Chip8(rom, scale, debug).run()

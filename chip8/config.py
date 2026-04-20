@@ -1,3 +1,5 @@
+from chip8.ctypes import Color
+
 DEFAULT_ROM: str = "./roms/tank.ch8"
 DEFAULT_SCALE: int = 10  # Screen size multiplier
 
@@ -35,5 +37,5 @@ PIXEL_WIDTH: int = 8
 PIXEL_HEIGHT: int = 8
 
 # Monochrome colors
-BLACK: tuple[int, int, int] = (0, 0, 0)
-WHITE: tuple[int, int, int] = (255, 255, 255)
+BLACK: Color = (0, 0, 0)
+WHITE: Color = (255, 255, 255)
