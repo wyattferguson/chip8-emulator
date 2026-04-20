@@ -24,7 +24,7 @@ class CPU:
         self.ram: RAM = ram
         self.keypad: Keypad = keypad
         self.screen: Screen = screen
-        self.opcode: OpCode | None = None
+        self.opcode: OpCode
 
         self.v: bytearray = bytearray([0] * REGISTER_COUNT)  # 16 8-Bit Registers - V0 to VF
 
@@ -80,17 +80,18 @@ class CPU:
 
     def cycle(self) -> None:
         """Next CPU instruction."""
-        if self.delay_timer > 0:
-            self.delay_timer -= 1
-
-        if self.sound_timer > 0:
-            self.sound_timer -= 1
+        self.decrement_timers()
 
         for _ in range(CPU_CYCLES_PER_TICK):
             self.decode()
             self.execute()
             if self.opcode.pc_inc:
                 self.pc += self.opcode.length  # move pc to next instruction
+
+    def decrement_timers(self) -> None:
+        """Decrement delay and sound timers."""
+        self.delay_timer -= 1 if self.delay_timer > 0 else 0
+        self.sound_timer -= 1 if self.sound_timer > 0 else 0
 
     def cls(self) -> None:
         """Clear screen."""
