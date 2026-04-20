@@ -11,13 +11,13 @@ This is my crack at creating a basic Chip-8 emulator as a learning exercise befo
 
 The current version v0.2 of this emulator was just to clean up some old bugs and to add testing in preperation for a other larger emulator builds down the line.
 
-## Development Setup
+## Setup + Run Emulator
 
 Installation is pretty straight forward, Im using [UV](https://docs.astral.sh/uv/) to manage everything.
 
 To get it all running from scratch:
 
-```
+```bash
 # spin up a virtual enviroment
 uv venv
 
@@ -27,7 +27,7 @@ uv venv
 # install all the cool dependancies
 uv sync
 
-# Run the default rom (tank.ch8)
+# Run the default rom (particle.ch8)
 task run
 
 # You can pass another rom with the -r flag
@@ -35,15 +35,22 @@ task run -r ./roms/walk.ch8
 
 # The screen scale can be adjusted with the -s flag (ie. -s 15 will scale is 15x the original resolution of 64x32)
 task run -s 15
+```
 
+## Development Tools
+
+I've included a few shortcuts for linting, formating, and tests.
+
+```bash
 # lint source
 task lint
 
 # format source with ruff
 task format
 
-# run basic battery of pytests
+# run full battery of pytests
 task tests
+
 ```
 
 ## Chip8 Specifications
@@ -59,15 +66,6 @@ task tests
 - VF is also used as a flag register; many instructions will set it to either 1 or 0 based on some rule, for example using it as a carry flag
 
 ## Controls
-
-The earliest computers that CHIP-8 were used with had hexadecimal keypads. These had 16 keys, labelled 0 through F, and were arranged in a 4x4 grid.
-
-```
-1 	2 	3 	C
-4 	5 	6 	D
-7 	8 	9 	E
-A 	0 	B 	F
-```
 
 For CHIP-8 emulators that run on modern PCs, it’s customary to use the left side of the QWERTY keyboard for this:
 

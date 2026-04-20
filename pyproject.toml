@@ -1,9 +1,8 @@
-
 [project]
 name = "chip8-emulator"
-version = "0.2.5"
+version = "0.3.0"
 description = "The Chip8 is a very simple system, originally created as an interpretter for an 8 bit CPU in the 1970s."
-license = {text = "MIT License"}
+license = {file = "LICENSE"}
 keywords = ["chip8", "emulator", "vintage cpu", "cpu", "python"]
 readme = "README.md"
 authors = [
@@ -18,9 +17,9 @@ classifiers = [
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python",
-    "Topic :: Utilities",
     "License :: OSI Approved :: MIT License"
 ]
+
 dependencies = [
     "click>=8.1.8",
     "pygame>=2.6.1",
@@ -28,9 +27,9 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "ty>=0.0.1a6",
-    "pytest>=8.3.4",
-    "ruff>=0.9.7",
+    "ty>=0.0.17",
+    "pytest>=9.0.2",
+    "ruff>=0.15.1",
     "taskipy>=1.14.1",
 ]
 
@@ -40,6 +39,9 @@ repository = "https://github.com/wyattferguson/chip8-emulator.git"
 documentation = "https://github.com/wyattferguson/chip8-emulator"
 issues = "https://github.com/wyattferguson/chip8-emulator/issues"
 
+[project.scripts]
+chip8 = "chip8.__main__:run"
+
 [build-system]
 requires = ["uv_build"]
 build-backend = "uv_build"
@@ -48,74 +50,90 @@ build-backend = "uv_build"
 module-name = "chip8"
 module-root = ""
 
-[project.scripts]
-chip8 = "chip8.__main__:run"
+[tool.hatch]
+version.path = "chip8/__init__.py"
+build.targets.wheel.packages = ["chip8"]
 
 [tool.taskipy.tasks]
-format = "ruff format ./src/"
-lint = "ruff check --fix ./src/"
-tests = "pytest --verbose --color=yes tests"
-typecheck = "ty check"
-run = "chip8"
+format = {cmd = "ruff format ./chip8 ./tests", help = "Format code using ruff"}
+lint = {cmd = "ruff check --fix ./chip8 ./tests", help = "Lint and auto-fix code using ruff"}
+type = {cmd = "ty check", help = "Typecheck code using ty" }
+tests = {cmd = "pytest --verbose -s --color=yes tests", help = "Run tests using pytest"}
+run = {cmd = "chip8", help = "Run the chip8 emulator"}
 
 [tool.ruff]
 line-length = 100
-fix = true
 indent-width = 4
-format.indent-style = "space"
 target-version = "py312"
-include = ["*.py"]
-src = ["chip8", "tests"]
+exclude = [
+    ".git",
+    ".venv",
+    "venv",
+    "__pycache__",
+    ".pytest_cache",
+    ".ruff_cache",
+    "build",
+    "dist",
+    "*.egg-info",
+    "htmlcov",
+    ".cache",
+]
 
 [tool.ruff.lint]
 pydocstyle.convention = "google"
 fixable = ["ALL"]
-select = [
-    "F", # Pyflakes rules
-    "A", # flake8-builtins
-    "B", # flake8-bugbear
-    "N", # PEP8 Naming
-    "W", # PyCodeStyle warnings
-    "E", # PyCodeStyle errors
-    "I", # Sort imports properly
-    "Q", # flake8-quotes
-    "PT", #flake8-pytest-style
-    "UP", # Warn if certain things can changed due to newer Python versions
-    "C4", # Catch incorrect use of comprehensions, dict, list, etc
-    "ISC", # Good use of string concatenation
-    "RET", # Good return practices
-    "PERF", # Perflint: performance
-    "SIM", # Common simplification rules
-    "TID", # Some good import practices
-    "RUF", #Ruff-specific rules
-    "DJ", # Django rules
-    "FAST" # FastAPI rules
-  ]
+select = ["ALL"]
+ignore = [
+    "FA102",    # Flake8-future-annotations
+    "F401",     # Disable fix for unused imports
+    "B904",     # Allow raising exceptions without from e
+    "PLR0913",  # too many arguments
+    "CPY",      # Flake8-copyright
+    "T201",     # Debugging print statements
+    "ERA",      # Eradicate – detects commented-out code
+    "BLE001",   # Catch-all exceptions
+    "D100",     # missing docstring in public module
+    "D105",     # undocumented magic method
+    "D107",     # undocumented public init
+    "D203",     # incorrect-blank-line-before-class
+    "D205",     # line-between-summary-and-description
+    "D212",     # multi-line-summary-first-line
+    "D400",     # missing-trailing-period
+    "D407",     # missing-dashed-underline-after-section
+    "S311",     # rand-usage
+    "EM102",    # f-string-exception
+    "EM101",    # implicit-str-concatenation
+    "TRY003",   # long-exception-messages
+    "FBT003",   # bool argument in function call
+    "FBT002",   # bool argument in lambda
+    "FBT001",   # bool argument in function definition
+    "PLR2004",  # Magic values
+    "FIX002",   # TODOs can hang out
+    "TD002",    # missing todo authoer
+    "TD003",    # missing todo link
+    "TC001",    # move import into type-checking block
+]
 
-ignore=[
-    "D105",
-    "D107",
-    "D203",
-    "D212",
-    "UP006",
-    "UP007",
-    "D400",
-    "D406",
-    "D407",
-    "PLC1901",
-    "UP035"
-  ]
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
 
 [tool.ruff.lint.per-file-ignores]
-"test_*.py" = [
-    "D", # Disable docstring check for test files
-    "F841", # Disable unused variable check for test files
-    "S101",    # asserts allowed in tests...
-    "ARG",     # Unused function args -> fixtures nevertheless are functionally relevant...
-    "PLR2004", # Magic value used in comparison, ...
+"tests/**/*.py" = [
+    "PLC0415",  # Import outside top-level (tests often need scoped imports)
+    "PLR2004",  # Magic values
+    "PT001",    # Use @pytest.fixture() over @pytest.fixture
+    "S101",     # Use of assert detected
+    "D101",     # Missing docstring in public class
+    "D103",     # Missing docstring in public function
+    "E741",     # Ambiguous variable name 'l', 'O', or 'I'
 ]
 
 [tool.ty]
-src.root = "./chip8"
-environment.python = "./.venv"
-terminal.output-format = "concise"
+terminal.output-format = "full"
+
+[tool.ty.environment]
+python = ".venv"
+
+[tool.ty.src]
+include = ["chip8/**/*.py","tests/**/*.py"]

@@ -1,10 +1,15 @@
-DEFAULT_ROM: str = "./roms/tank.ch8"
+from chip8.ctypes import Color
+
+DEFAULT_ROM: str = "./roms/particle.ch8"
 DEFAULT_SCALE: int = 10  # Screen size multiplier
 
-# Chip8 settings
 MEMORY_SIZE: int = 4096  # 4KB of memory
-REGISTERS_COUNT: int = 16  # 16 general-purpose registers (V0 to VF)
+REGISTER_COUNT: int = 16  # 16 general-purpose registers (V0 to VF)
 TICK_RATE: int = 60  # 60Hz refresh rate
+CPU_CYCLES_PER_TICK: int = 12  # execute enough opcodes each frame to reduce CLS/DRW tear
+PC_INIT = 0x200  # Program counter starts at 0x200 in memory
+MAX_8BIT = 256  # 8-bit value wraparound
+CARRY_FLAG = 0xF  # VF register index for carry flag
 
 # fmt: off
 FONT:list[int] = [
@@ -25,6 +30,7 @@ FONT:list[int] = [
             0xF0, 0x80, 0xF0, 0x80, 0xF0,   # E
             0xF0, 0x80, 0xF0, 0x80, 0x80,   # F
         ]
+# fmt: on
 
 # Screen settings
 SCREEN_WIDTH: int = 64
@@ -33,5 +39,5 @@ PIXEL_WIDTH: int = 8
 PIXEL_HEIGHT: int = 8
 
 # Monochrome colors
-BLACK: tuple[int, int, int] = (0, 0, 0)
-WHITE: tuple[int, int, int] = (255, 255, 255)
+BLACK: Color = (0, 0, 0)
+WHITE: Color = (255, 255, 255)
