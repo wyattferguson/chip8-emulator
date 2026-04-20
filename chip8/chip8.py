@@ -18,6 +18,8 @@ class Chip8:
     ) -> None:
         self.rom = rom
         self.debug = debug
+        pg.init()
+        pg.display.set_caption("👾 Chip8 Emulator")
         self.screen = Screen(screen_scale)
         self.keypad = Keypad()
         self.ram = RAM(rom)
