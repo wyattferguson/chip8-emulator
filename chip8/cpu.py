@@ -108,7 +108,7 @@ class CPU:
     def sub(self) -> None:
         """Call subroutine."""
         self.stack.append(self.pc)
-        self.pc = self.addr
+        self.jmp()
 
     def se_vx(self) -> None:
         """Skip next instruction if Vx == kk."""

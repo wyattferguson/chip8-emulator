@@ -5,11 +5,7 @@
 This is my crack at creating a basic Chip-8 emulator as a learning exercise before moving onto more complicated systems. Its a great learning system since it only has 34 instructions and a simple memory layout. A few notes about my project:
 
 - All 34 instructions are here +1 from the extended set.
-- Screen has a flicker because of the way Im redrawing the pixels, but for this its good enough.
-- Testing needs to be expanded for the cpu
-- Some ROMS and assembly code for them has been included in the /roms/ folder.
-
-The current version v0.2 of this emulator was just to clean up some old bugs and to add testing in preperation for a other larger emulator builds down the line.
+- Some ROMS for testing have been included in the `/roms/` folder.
 
 ## Setup + Run Emulator
 
