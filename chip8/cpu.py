@@ -3,7 +3,7 @@ from collections.abc import Callable
 from operator import and_, or_, xor
 
 from chip8._exceptions import DecodeError, ExecuteError
-from chip8.config import CPU_CYCLES_PER_TICK, MAX_8BIT, PC_INIT, REGISTER_COUNT
+from chip8.config import CARRY_FLAG, CPU_CYCLES_PER_TICK, MAX_8BIT, PC_INIT, REGISTER_COUNT
 from chip8.ctypes import OpCode
 from chip8.keypad import Keypad
 from chip8.opcodes import opcodes
@@ -20,27 +20,27 @@ BITWISE_OPERATORS: dict[str, Callable[[int, int], int]] = {
 class CPU:
     """Chip8 CPU."""
 
-    v: bytearray = bytearray([0] * REGISTER_COUNT)  # 16 8-Bit Registers - V0 to VF
-
-    i: int = 0  # 12bit register
-    x: int = 0  # 4-bit register
-    y: int = 0  # 4-bit register
-    n: int = 0  # lowest 4 bits of the instruction
-    addr: int = 0  # lowest 12 bits of the instruction
-    kk: int = 0  # lowest 8 bits of the instruction
-    op_group: int = 0  # opcode group the instruction belongs to
-
-    stack: list[int] = []  # Store return addresses when subroutines are called  # noqa: RUF012
-    sound_timer: int = 0  # Play a beep when > 0
-    delay_timer: int = 0
-
-    pc: int = PC_INIT  # program counter, starts at 0x200 in ram
-
     def __init__(self, ram: RAM, screen: Screen, keypad: Keypad) -> None:
         self.ram: RAM = ram
         self.keypad: Keypad = keypad
         self.screen: Screen = screen
         self.opcode: OpCode | None = None
+
+        self.v: bytearray = bytearray([0] * REGISTER_COUNT)  # 16 8-Bit Registers - V0 to VF
+
+        self.i: int = 0  # 12bit register
+        self.x: int = 0  # 4-bit register
+        self.y: int = 0  # 4-bit register
+        self.n: int = 0  # lowest 4 bits of the instruction
+        self.addr: int = 0  # lowest 12 bits of the instruction
+        self.kk: int = 0  # lowest 8 bits of the instruction
+        self.op_group: int = 0  # opcode group the instruction belongs to
+
+        self.stack: list[int] = []  # Store return addresses when subroutines are called
+        self.sound_timer: int = 0  # Play a beep when > 0
+        self.delay_timer: int = 0
+
+        self.pc: int = PC_INIT  # program counter, starts at 0x200 in ram
 
     def decode(self) -> None:
         """Retreive and decode next opcode."""
@@ -148,29 +148,33 @@ class CPU:
     def add_vx_vy(self) -> None:
         """Vx = Vx + Vy with carry."""
         v_sum: int = self.v[self.x] + self.v[self.y]
-        self.v[0xF] = 1 if v_sum > MAX_8BIT - 1 else 0  # set carry flag
+        self._eval_carry_flag(v_sum, MAX_8BIT)
         self.v[self.x] = v_sum % MAX_8BIT
 
     def sub_vx_vy(self) -> None:
         """Vx = Vx - Vy with underflow."""
         v_diff: int = self.v[self.x] - self.v[self.y]
-        self.v[0xF] = 1 if self.v[self.x] >= self.v[self.y] else 0  # set not-borrow flag
+        self._eval_carry_flag(self.v[self.x], self.v[self.y])
         self.v[self.x] = v_diff % MAX_8BIT
 
     def subn_vx_vy(self) -> None:
         """Vx = Vy - Vx with underflow."""
         v_diff: int = self.v[self.y] - self.v[self.x]
-        self.v[0xF] = 1 if self.v[self.y] >= self.v[self.x] else 0  # set not-borrow flag
+        self._eval_carry_flag(self.v[self.y], self.v[self.x])
         self.v[self.x] = v_diff % MAX_8BIT
+
+    def _eval_carry_flag(self, part_a: int, part_b: int) -> None:
+        """Evaluate and set VF carry flag."""
+        self.v[CARRY_FLAG] = 1 if part_a >= part_b else 0
 
     def shr_vx(self) -> None:
         """Set Vx = Vx SHR 1."""
-        self.v[0xF] = self.v[self.x] & 0x1
+        self.v[CARRY_FLAG] = self.v[self.x] & 0x1
         self.v[self.x] >>= 1
 
     def shl_vx(self) -> None:
         """Set Vx = Vx SHL 1."""
-        self.v[0xF] = (self.v[self.x] & 0x80) >> 7
+        self.v[CARRY_FLAG] = (self.v[self.x] & 0x80) >> 7
         self.v[self.x] = (self.v[self.x] << 1) % MAX_8BIT
 
     def sne_vx_vy(self) -> None:
@@ -192,12 +196,12 @@ class CPU:
 
     def draw(self) -> None:
         """Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision."""
-        self.v[0xF] = 0
+        self.v[CARRY_FLAG] = 0
         for i in range(self.n):
             sprite: int = self.ram[self.i + i]
             for j in range(8):
                 if sprite & 0x80 and self.screen.flip_pixel(self.v[self.x] + j, self.v[self.y] + i):
-                    self.v[0xF] = 1
+                    self.v[CARRY_FLAG] = 1
 
                 sprite <<= 1
 

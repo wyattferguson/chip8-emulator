@@ -46,17 +46,17 @@ class DummyKeypad(Keypad):
 def cpu(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> CPU:
     """Create a CPU instance for opcode-level tests."""
     # Reset class-level CPU state before each instance is created.
-    monkeypatch.setattr(CPU, "v", bytearray([0] * REGISTER_COUNT))
-    monkeypatch.setattr(CPU, "i", 0)
-    monkeypatch.setattr(CPU, "x", 0)
-    monkeypatch.setattr(CPU, "y", 0)
-    monkeypatch.setattr(CPU, "n", 0)
-    monkeypatch.setattr(CPU, "addr", 0)
-    monkeypatch.setattr(CPU, "kk", 0)
-    monkeypatch.setattr(CPU, "stack", [])
-    monkeypatch.setattr(CPU, "sound_timer", 0)
-    monkeypatch.setattr(CPU, "delay_timer", 0)
-    monkeypatch.setattr(CPU, "pc", PC_INIT)
+    monkeypatch.setattr(CPU, "v", bytearray([0] * REGISTER_COUNT), raising=False)
+    monkeypatch.setattr(CPU, "i", 0, raising=False)
+    monkeypatch.setattr(CPU, "x", 0, raising=False)
+    monkeypatch.setattr(CPU, "y", 0, raising=False)
+    monkeypatch.setattr(CPU, "n", 0, raising=False)
+    monkeypatch.setattr(CPU, "addr", 0, raising=False)
+    monkeypatch.setattr(CPU, "kk", 0, raising=False)
+    monkeypatch.setattr(CPU, "stack", [], raising=False)
+    monkeypatch.setattr(CPU, "sound_timer", 0, raising=False)
+    monkeypatch.setattr(CPU, "delay_timer", 0, raising=False)
+    monkeypatch.setattr(CPU, "pc", PC_INIT, raising=False)
 
     rom_path = tmp_path / "empty.ch8"
     rom_path.write_bytes(b"")

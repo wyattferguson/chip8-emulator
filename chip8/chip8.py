@@ -26,9 +26,6 @@ class Chip8:
 
     def run(self) -> None:
         """Run the emulator."""
-        pg.init()
-        pg.display.set_caption(f"👾 Chip8 Emulator :: {self.rom}")
-
         while True:
             self.keypad.update()
             self.cpu.cycle()

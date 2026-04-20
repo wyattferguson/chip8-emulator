@@ -55,8 +55,8 @@ version.path = "chip8/__init__.py"
 build.targets.wheel.packages = ["chip8"]
 
 [tool.taskipy.tasks]
-format = {cmd = "ruff format ./src/gbemu/", help = "Format code using ruff"}
-lint = {cmd = "ruff check --fix ./src/gbemu/", help = "Lint and auto-fix code using ruff"}
+format = {cmd = "ruff format ./chip8 ./tests", help = "Format code using ruff"}
+lint = {cmd = "ruff check --fix ./chip8 ./tests", help = "Lint and auto-fix code using ruff"}
 type = {cmd = "ty check", help = "Typecheck code using ty" }
 tests = {cmd = "pytest --verbose -s --color=yes tests", help = "Run tests using pytest"}
 run = {cmd = "chip8", help = "Run the chip8 emulator"}
@@ -136,4 +136,4 @@ terminal.output-format = "full"
 python = ".venv"
 
 [tool.ty.src]
-include = ["src/chip8/**/*.py","tests/**/*.py"]
+include = ["chip8/**/*.py","tests/**/*.py"]

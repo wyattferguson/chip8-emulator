@@ -45,18 +45,18 @@ class DummyKeypad(Keypad):
 @pytest.fixture
 def cpu_factory(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> CPU:
     """Build a CPU with reset class-level state and isolated doubles."""
-    # Reset class-level mutable state for repeatable tests.
-    monkeypatch.setattr(CPU, "v", bytearray([0] * REGISTER_COUNT))
-    monkeypatch.setattr(CPU, "i", 0)
-    monkeypatch.setattr(CPU, "x", 0)
-    monkeypatch.setattr(CPU, "y", 0)
-    monkeypatch.setattr(CPU, "n", 0)
-    monkeypatch.setattr(CPU, "addr", 0)
-    monkeypatch.setattr(CPU, "kk", 0)
-    monkeypatch.setattr(CPU, "stack", [])
-    monkeypatch.setattr(CPU, "sound_timer", 0)
-    monkeypatch.setattr(CPU, "delay_timer", 0)
-    monkeypatch.setattr(CPU, "pc", PC_INIT)
+    # Keep fixture resilient whether CPU state is class-level or instance-level.
+    monkeypatch.setattr(CPU, "v", bytearray([0] * REGISTER_COUNT), raising=False)
+    monkeypatch.setattr(CPU, "i", 0, raising=False)
+    monkeypatch.setattr(CPU, "x", 0, raising=False)
+    monkeypatch.setattr(CPU, "y", 0, raising=False)
+    monkeypatch.setattr(CPU, "n", 0, raising=False)
+    monkeypatch.setattr(CPU, "addr", 0, raising=False)
+    monkeypatch.setattr(CPU, "kk", 0, raising=False)
+    monkeypatch.setattr(CPU, "stack", [], raising=False)
+    monkeypatch.setattr(CPU, "sound_timer", 0, raising=False)
+    monkeypatch.setattr(CPU, "delay_timer", 0, raising=False)
+    monkeypatch.setattr(CPU, "pc", PC_INIT, raising=False)
 
     rom_path = tmp_path / "cpu-smoke.ch8"
     rom_path.write_bytes(b"\x6a\x0f\x7a\x01" + (b"\x00\xe0" * 10))
@@ -78,6 +78,7 @@ def test_decode_and_execute_progress_instruction(cpu_factory: CPU) -> None:
     cpu = cpu_factory
     cpu.decode()
     cpu.execute()
+    assert cpu.opcode is not None
     cpu.pc += cpu.opcode.length
     cpu.decode()
     cpu.execute()

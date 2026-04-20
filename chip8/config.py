@@ -9,6 +9,7 @@ TICK_RATE: int = 60  # 60Hz refresh rate
 CPU_CYCLES_PER_TICK: int = 12  # execute enough opcodes each frame to reduce CLS/DRW tear
 PC_INIT = 0x200  # Program counter starts at 0x200 in memory
 MAX_8BIT = 256  # 8-bit value wraparound
+CARRY_FLAG = 0xF  # VF register index for carry flag
 
 # fmt: off
 FONT:list[int] = [

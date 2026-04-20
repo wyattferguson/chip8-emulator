@@ -16,6 +16,9 @@ class Screen:
     """Gameplay Screen."""
 
     def __init__(self, scaler: int = DEFAULT_SCALE) -> None:
+        pg.init()
+        pg.display.set_caption("👾 Chip8 Emulator")
+
         self.scaler = scaler
         self.buffer: ScreenBuffer = self._empty_buffer()  # pixel representation of display
         self.dirty = True  # only push frames when the framebuffer changes
