@@ -1,9 +1,9 @@
 [project]
 name = "chip8-emulator"
-version = "0.3.0"
-description = "The Chip8 is a very simple system, originally created as an interpretter for an 8 bit CPU in the 1970s."
+version = "0.4.0"
+description = "Chip8 emulator writen in Python"
 license = {file = "LICENSE"}
-keywords = ["chip8", "emulator", "vintage cpu", "cpu", "python"]
+keywords = ["chip8", "emulator", "vintage", "emulation", "python"]
 readme = "README.md"
 authors = [
     { name = "wyattferguson", email = "wyattxdev@duck.com" }

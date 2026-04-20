@@ -1,6 +1,7 @@
 import pytest
 
-from chip8.config import BLACK, PIXEL_HEIGHT, PIXEL_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH, WHITE
+from chip8.config import BLACK, WHITE
+from chip8.constants import PIXEL_HEIGHT, PIXEL_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH
 from chip8.screen import Screen
 
 

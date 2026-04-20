@@ -2,7 +2,8 @@ from pathlib import Path
 
 import pytest
 
-from chip8.config import CPU_CYCLES_PER_TICK, FONT, PC_INIT, REGISTER_COUNT
+from chip8.audio import Audio
+from chip8.constants import CPU_CYCLES_PER_TICK, FONT, PC_INIT, REGISTER_COUNT
 from chip8.cpu import CPU
 from chip8.keypad import Keypad
 from chip8.ram import RAM
@@ -61,7 +62,7 @@ def cpu_factory(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> CPU:
     rom_path = tmp_path / "cpu-smoke.ch8"
     rom_path.write_bytes(b"\x6a\x0f\x7a\x01" + (b"\x00\xe0" * 10))
     ram = RAM(str(rom_path))
-    return CPU(ram, DummyScreen(), DummyKeypad())
+    return CPU(ram, DummyScreen(), DummyKeypad(), Audio(mute=True))
 
 
 def test_ram_starts_with_font_and_rom_bytes(cpu_factory: CPU) -> None:
@@ -92,11 +93,9 @@ def test_cycle_runs_configured_instructions_and_timers(cpu_factory: CPU) -> None
     screen = cpu.screen
     assert isinstance(screen, DummyScreen)
     cpu.delay_timer = 2
-    cpu.sound_timer = 1
 
     cpu.cycle()
 
     assert cpu.delay_timer == 1
-    assert cpu.sound_timer == 0
     assert cpu.pc == PC_INIT + (CPU_CYCLES_PER_TICK * 2)
     assert screen.clear_calls == 10

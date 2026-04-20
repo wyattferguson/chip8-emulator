@@ -10,7 +10,7 @@ class OpCode:
 
     label: str  # mnemonic name
     call: str  # CPU method name to call
-    args: list[bool] | None = None  # give arguments to send to CPU method
+    args: list[bool | str] | None = None  # give arguments to send to CPU method
     length: int = 2  # length of instruction in bytes
     pc_inc: bool = True  # whether to increment the program counter after execution
 

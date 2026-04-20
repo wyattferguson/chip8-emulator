@@ -2,14 +2,11 @@
 
 # :robot: Chip-8 Emulator
 
-This is my crack at creating a basic Chip-8 emulator as a learning exercise before moving onto more complicated systems. Its a great learning system since it only has 34 instructions and a simple memory layout. A few notes about my project:
+This is my Chip-8 emulator I built in Python. Created in 1977, CHIP-8 is the original fantasy console. Initially designed to ease game development for the COSMAC VIP kit computer. I built this as a learning project to learn the basics of emulation. A few notes:
 
 - All 34 instructions are here +1 from the extended set.
-- Screen has a flicker because of the way Im redrawing the pixels, but for this its good enough.
-- Testing needs to be expanded for the cpu
-- Some ROMS and assembly code for them has been included in the /roms/ folder.
-
-The current version v0.2 of this emulator was just to clean up some old bugs and to add testing in preperation for a other larger emulator builds down the line.
+- Some ROMS for testing have been included in the `/roms/` folder.
+- A full battery of tests to veryify opcode and hardware function.
 
 ## Setup + Run Emulator
 
@@ -69,11 +66,11 @@ task tests
 
 For CHIP-8 emulators that run on modern PCs, it’s customary to use the left side of the QWERTY keyboard for this:
 
-```
-1 	2 	3 	4
-Q 	W 	E 	R
-A 	S 	D 	F
-Z 	X 	C 	V
+```bash
+ CHIP-8:  1 2 3 C     Keyboard: 1 2 3 4
+          4 5 6 D               Q W E R
+          7 8 9 E               A S D F
+          A 0 B F               Z X C V
 ```
 
 ## References
