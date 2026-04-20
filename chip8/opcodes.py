@@ -8,12 +8,13 @@ class OpCode:
     label: str  # mnemonic name
     call: str  # CPU method name to call
     args: list[bool] | None = None  # give arguments to send to CPU method
+    length: int = 2  # length of instruction in bytes
+    pc_inc: bool = True  # whether to increment the program counter after execution
 
     def __str__(self) -> str:
-        return f"{self.label} - {self.call} - {self.args}"
+        return f"{self.label} - {self.call} - {self.args} - {self.pc_inc}"
 
 
-# All standard Chip8 CPU Opcodes
 opcodes: dict[int, OpCode] = {
     0x00E0: OpCode("CLS", "cls"),
     0x00EE: OpCode("RET", "ret"),

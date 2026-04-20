@@ -1,6 +1,6 @@
 import pygame as pg
 
-from chip8._config import DEFAULT_ROM, DEFAULT_SCALE
+from chip8.config import DEFAULT_ROM, DEFAULT_SCALE
 from chip8.cpu import CPU
 from chip8.keypad import Keypad
 from chip8.screen import Screen
@@ -16,9 +16,8 @@ class Chip8:
         debug: bool = False,
     ) -> None:
         self.rom = rom
-        self.screen_scale = screen_scale
         self.debug = debug
-        self.screen = Screen(self.screen_scale)
+        self.screen = Screen(screen_scale)
         self.keypad = Keypad()
         self.cpu = CPU(self.rom, self.screen, self.keypad)
         self.clock = pg.time.Clock()
@@ -26,9 +25,9 @@ class Chip8:
     def run(self) -> None:
         """Run the emulator."""
         pg.init()
-        pg.display.set_caption(f"👾 Chip8 Emulator :: {self.rom} :: {self.screen_scale}x Scale")
+        pg.display.set_caption(f"👾 Chip8 Emulator :: {self.rom}")
 
         while True:
+            self.keypad.update()
             self.cpu.cycle()
             self.screen.update()
-            self.keypad.update()

@@ -2,13 +2,11 @@ import sys
 
 import pygame as pg
 
-from chip8._exceptions import KeypadError
-
 
 class Keypad:
     """16 Key hex keypad ranging 1 to V."""
 
-    def __init__(self, debug: bool = False) -> None:
+    def __init__(self) -> None:
         self.key_map = {
             49: 0x1,  # 1
             50: 0x2,  # 2
@@ -27,8 +25,7 @@ class Keypad:
             99: 0xB,  # C
             118: 0xF,  # V
         }
-        self.pressed_keys: list[int] = [0] * 16
-        self.debug = debug
+        self.pressed_keys: list[int] = [0] * len(self.key_map)
 
     def is_key_pressed(self, key_code: int) -> int:
         """Check if a key is pressed."""
@@ -41,10 +38,6 @@ class Keypad:
             if event.type == pg.QUIT or (event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE):
                 pg.quit()
                 sys.exit()
-            elif event.type in (pg.KEYDOWN, pg.KEYUP):
-                try:
-                    key: int = self.key_map[event.key]
-                    self.pressed_keys[key] = not self.pressed_keys[key]
-                except Exception as e:
-                    if self.debug:
-                        raise KeypadError(f"Key press error: {event.key} :: {e}") from e
+            elif event.type in (pg.KEYDOWN, pg.KEYUP) and event.key in self.key_map:
+                key: int = self.key_map[event.key]
+                self.pressed_keys[key] = not self.pressed_keys[key]

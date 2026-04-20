@@ -1,7 +1,8 @@
 import random
+from pathlib import Path
 
-from chip8._config import FONT, MEMORY_SIZE, REGISTERS_COUNT
 from chip8._exceptions import DecodeError, ExecuteError, RomError
+from chip8.config import FONT, MEMORY_SIZE, PC_INIT, REGISTERS_COUNT
 from chip8.keypad import Keypad
 from chip8.opcodes import OpCode, opcodes
 from chip8.screen import Screen
@@ -26,7 +27,7 @@ class CPU:
     sound_timer: int = 0  # Play a beep when > 0
     delay_timer: int = 0
 
-    pc: int = 0x200  # program counter, starts at 0x200 in ram
+    pc: int = PC_INIT  # program counter, starts at 0x200 in ram
 
     def __init__(self, rom: str, screen: Screen, keypad: Keypad) -> None:
         self.keypad: Keypad = keypad
@@ -38,7 +39,7 @@ class CPU:
     def load_rom(self, rom: str) -> None:
         """Copy ROM into memory."""
         try:
-            with open(rom, "rb") as rom_ptr:
+            with Path(rom).open("rb") as rom_ptr:
                 rom_data: bytes = rom_ptr.read()
                 self.ram[self.pc : self.pc + len(rom_data)] = bytearray(rom_data)
         except Exception as e:
@@ -249,4 +250,3 @@ class CPU:
         bcd_value = f"{self.v[self.x]:03d}"
         for n in range(3):
             self.ram[self.i + n] = int(bcd_value[n])
-

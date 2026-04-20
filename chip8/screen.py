@@ -1,6 +1,6 @@
 import pygame as pg
 
-from chip8._config import (
+from chip8.config import (
     BLACK,
     DEFAULT_SCALE,
     PIXEL_HEIGHT,
