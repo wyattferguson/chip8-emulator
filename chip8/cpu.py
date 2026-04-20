@@ -243,11 +243,12 @@ class CPU:
 
     def load_i_vx(self) -> None:
         """Store registers V0 through Vx in memory starting at location I."""
-        for i in range(self.x + 1):
-            self.ram[self.i + i] = self.v[i]
+        for offset, register in enumerate(self.v[: self.x + 1]):
+            self.ram[self.i + offset] = register
 
     def load_bcd(self) -> None:
         """Store BCD representation of Vx in memory locations I, I+1, and I+2."""
-        bcd_value = f"{self.v[self.x]:03d}"
-        for n in range(3):
-            self.ram[self.i + n] = int(bcd_value[n])
+        value = self.v[self.x]
+        self.ram[self.i] = value // 100
+        self.ram[self.i + 1] = (value // 10) % 10
+        self.ram[self.i + 2] = value % 10
