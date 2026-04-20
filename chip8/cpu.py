@@ -148,25 +148,22 @@ class CPU:
 
     def add_vx_vy(self) -> None:
         """Vx = Vx + Vy with carry."""
-        v_sum: int = self.v[self.x] + self.v[self.y]
-        self._eval_carry_flag(v_sum, MAX_8BIT)
-        self.v[self.x] = v_sum % MAX_8BIT
+        total = self.v[self.x] + self.v[self.y]
+        self.v[CARRY_FLAG] = total >= MAX_8BIT
+        self.v[self.x] = total % MAX_8BIT
 
     def sub_vx_vy(self) -> None:
         """Vx = Vx - Vy with underflow."""
-        v_diff: int = self.v[self.x] - self.v[self.y]
-        self._eval_carry_flag(self.v[self.x], self.v[self.y])
-        self.v[self.x] = v_diff % MAX_8BIT
+        self._store_sub_vx_result(self.v[self.x] - self.v[self.y])
 
     def subn_vx_vy(self) -> None:
         """Vx = Vy - Vx with underflow."""
-        v_diff: int = self.v[self.y] - self.v[self.x]
-        self._eval_carry_flag(self.v[self.y], self.v[self.x])
-        self.v[self.x] = v_diff % MAX_8BIT
+        self._store_sub_vx_result(self.v[self.y] - self.v[self.x])
 
-    def _eval_carry_flag(self, part_a: int, part_b: int) -> None:
-        """Evaluate and set VF carry flag."""
-        self.v[CARRY_FLAG] = 1 if part_a >= part_b else 0
+    def _store_sub_vx_result(self, value: int) -> None:
+        """Store a subtraction result in Vx and update VF."""
+        self.v[CARRY_FLAG] = value >= 0
+        self.v[self.x] = value % MAX_8BIT
 
     def shr_vx(self) -> None:
         """Set Vx = Vx SHR 1."""

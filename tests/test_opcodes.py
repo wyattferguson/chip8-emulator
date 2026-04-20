@@ -214,6 +214,16 @@ def test_8xy5_sub_vx_vy(cpu: CPU) -> None:
     assert cpu.v[0xF] == 1
 
 
+def test_8xy5_sub_vx_vy_sets_borrow_flag(cpu: CPU) -> None:
+    """Subtract Vy from Vx and clear VF when a borrow occurs."""
+    # Verify borrow handling when Vy is larger than Vx.
+    cpu.v[0xA] = 3
+    cpu.v[0xB] = 7
+    run_instruction(cpu, 0x8AB5)
+    assert cpu.v[0xA] == 252
+    assert cpu.v[0xF] == 0
+
+
 def test_8xy6_shr_vx(cpu: CPU) -> None:
     """Shift Vx right and move LSB into VF."""
     # Verify right-shift carry bit.
@@ -231,6 +241,16 @@ def test_8xy7_subn_vx_vy(cpu: CPU) -> None:
     run_instruction(cpu, 0x8AB7)
     assert cpu.v[0xA] == 0
     assert cpu.v[0xF] == 1
+
+
+def test_8xy7_subn_vx_vy_sets_borrow_flag(cpu: CPU) -> None:
+    """Set Vx to Vy - Vx and clear VF when a borrow occurs."""
+    # Verify borrow handling when Vx is larger than Vy.
+    cpu.v[0xA] = 9
+    cpu.v[0xB] = 4
+    run_instruction(cpu, 0x8AB7)
+    assert cpu.v[0xA] == 251
+    assert cpu.v[0xF] == 0
 
 
 def test_8xye_shl_vx(cpu: CPU) -> None:
