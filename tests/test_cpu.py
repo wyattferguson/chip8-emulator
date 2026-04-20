@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from chip8.config import FONT, PC_INIT, REGISTERS_COUNT
+from chip8.config import CPU_CYCLES_PER_TICK, FONT, PC_INIT, REGISTER_COUNT
 from chip8.cpu import CPU
 from chip8.keypad import Keypad
 from chip8.ram import RAM
@@ -39,14 +39,14 @@ class DummyKeypad(Keypad):
     def __init__(self) -> None:
         """Initialize the keypad test double."""
         # Start with all CHIP-8 keys released.
-        self.pressed_keys = [0] * REGISTERS_COUNT
+        self.pressed_keys = [0] * REGISTER_COUNT
 
 
 @pytest.fixture
 def cpu_factory(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> CPU:
     """Build a CPU with reset class-level state and isolated doubles."""
     # Reset class-level mutable state for repeatable tests.
-    monkeypatch.setattr(CPU, "v", bytearray([0] * REGISTERS_COUNT))
+    monkeypatch.setattr(CPU, "v", bytearray([0] * REGISTER_COUNT))
     monkeypatch.setattr(CPU, "i", 0)
     monkeypatch.setattr(CPU, "x", 0)
     monkeypatch.setattr(CPU, "y", 0)
@@ -59,7 +59,7 @@ def cpu_factory(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> CPU:
     monkeypatch.setattr(CPU, "pc", PC_INIT)
 
     rom_path = tmp_path / "cpu-smoke.ch8"
-    rom_path.write_bytes(b"\x6a\x0f\x7a\x01\x00\xe0\x00\xe0\x00\xe0")
+    rom_path.write_bytes(b"\x6a\x0f\x7a\x01" + (b"\x00\xe0" * 10))
     ram = RAM(str(rom_path))
     return CPU(ram, DummyScreen(), DummyKeypad())
 
@@ -84,8 +84,8 @@ def test_decode_and_execute_progress_instruction(cpu_factory: CPU) -> None:
     assert cpu.v[0xA] == 0x10
 
 
-def test_cycle_runs_five_instructions_and_timers(cpu_factory: CPU) -> None:
-    """Cycle should execute five opcodes and decrement timers once."""
+def test_cycle_runs_configured_instructions_and_timers(cpu_factory: CPU) -> None:
+    """Cycle should execute configured opcodes and decrement timers once."""
     # Verify cycle scheduling and timer ticks.
     cpu = cpu_factory
     screen = cpu.screen
@@ -97,5 +97,5 @@ def test_cycle_runs_five_instructions_and_timers(cpu_factory: CPU) -> None:
 
     assert cpu.delay_timer == 1
     assert cpu.sound_timer == 0
-    assert cpu.pc == PC_INIT + 10
-    assert screen.clear_calls == 3
+    assert cpu.pc == PC_INIT + (CPU_CYCLES_PER_TICK * 2)
+    assert screen.clear_calls == 10

@@ -3,7 +3,7 @@ from collections.abc import Callable
 from operator import and_, or_, xor
 
 from chip8._exceptions import DecodeError, ExecuteError
-from chip8.config import FONT, MEMORY_SIZE, PC_INIT, REGISTERS_COUNT
+from chip8.config import CPU_CYCLES_PER_TICK, MAX_8BIT, PC_INIT, REGISTER_COUNT
 from chip8.ctypes import OpCode
 from chip8.keypad import Keypad
 from chip8.opcodes import opcodes
@@ -20,7 +20,7 @@ BITWISE_OPERATORS: dict[str, Callable[[int, int], int]] = {
 class CPU:
     """Chip8 CPU."""
 
-    v: bytearray = bytearray([0] * REGISTERS_COUNT)  # 16 8-Bit Registers - V0 to VF
+    v: bytearray = bytearray([0] * REGISTER_COUNT)  # 16 8-Bit Registers - V0 to VF
 
     i: int = 0  # 12bit register
     x: int = 0  # 4-bit register
@@ -86,7 +86,7 @@ class CPU:
         if self.sound_timer > 0:
             self.sound_timer -= 1
 
-        for _ in range(5):
+        for _ in range(CPU_CYCLES_PER_TICK):
             self.decode()
             self.execute()
             if self.opcode.pc_inc:
@@ -130,7 +130,7 @@ class CPU:
 
     def add_vx_kk(self) -> None:
         """Set Vx = Vx + kk."""
-        self.v[self.x] = (self.v[self.x] + self.kk) % 256
+        self.v[self.x] = (self.v[self.x] + self.kk) % MAX_8BIT
 
     def set_vx_vy(self) -> None:
         """Set Vx = Vy."""
@@ -148,20 +148,20 @@ class CPU:
     def add_vx_vy(self) -> None:
         """Vx = Vx + Vy with carry."""
         v_sum: int = self.v[self.x] + self.v[self.y]
-        self.v[0xF] = 1 if v_sum > 255 else 0  # set carry flag
-        self.v[self.x] = v_sum % 256
+        self.v[0xF] = 1 if v_sum > MAX_8BIT - 1 else 0  # set carry flag
+        self.v[self.x] = v_sum % MAX_8BIT
 
     def sub_vx_vy(self) -> None:
         """Vx = Vx - Vy with underflow."""
         v_diff: int = self.v[self.x] - self.v[self.y]
         self.v[0xF] = 1 if self.v[self.x] >= self.v[self.y] else 0  # set not-borrow flag
-        self.v[self.x] = v_diff % 256
+        self.v[self.x] = v_diff % MAX_8BIT
 
     def subn_vx_vy(self) -> None:
         """Vx = Vy - Vx with underflow."""
         v_diff: int = self.v[self.y] - self.v[self.x]
         self.v[0xF] = 1 if self.v[self.y] >= self.v[self.x] else 0  # set not-borrow flag
-        self.v[self.x] = v_diff % 256
+        self.v[self.x] = v_diff % MAX_8BIT
 
     def shr_vx(self) -> None:
         """Set Vx = Vx SHR 1."""
@@ -171,7 +171,7 @@ class CPU:
     def shl_vx(self) -> None:
         """Set Vx = Vx SHL 1."""
         self.v[0xF] = (self.v[self.x] & 0x80) >> 7
-        self.v[self.x] = (self.v[self.x] << 1) % 256
+        self.v[self.x] = (self.v[self.x] << 1) % MAX_8BIT
 
     def sne_vx_vy(self) -> None:
         """Skip next instruction if Vx != Vy."""
@@ -188,7 +188,7 @@ class CPU:
 
     def rnd(self) -> None:
         """Set Vx = random byte AND kk."""
-        self.v[self.x] = random.randint(0, 255) & self.kk
+        self.v[self.x] = random.randint(0, MAX_8BIT - 1) & self.kk
 
     def draw(self) -> None:
         """Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision."""

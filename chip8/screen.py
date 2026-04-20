@@ -18,6 +18,7 @@ class Screen:
     def __init__(self, scaler: int = DEFAULT_SCALE) -> None:
         self.scaler = scaler
         self.buffer: ScreenBuffer = self._empty_buffer()  # pixel representation of display
+        self.dirty = True  # only push frames when the framebuffer changes
 
         self.screen = pg.display.set_mode((SCREEN_WIDTH * scaler, SCREEN_HEIGHT * scaler))
         self.clear()
@@ -29,6 +30,7 @@ class Screen:
         y %= SCREEN_HEIGHT
 
         self.buffer[y][x] ^= 1
+        self.dirty = True
 
         # was a pixel erased
         return not self.buffer[y][x]
@@ -40,7 +42,7 @@ class Screen:
     def clear(self) -> None:
         """Blank entire screen."""
         self.buffer = self._empty_buffer()
-        self.update()
+        self.dirty = True
 
     def draw_pixel(self, x: int, y: int) -> None:
         """Draw a single buffer pixel at (x, y) coordinates."""
@@ -58,7 +60,11 @@ class Screen:
 
     def update(self) -> None:
         """Update entire visible screen."""
+        if not self.dirty:
+            return
+
         for y in range(SCREEN_HEIGHT):
             for x in range(SCREEN_WIDTH):
                 self.draw_pixel(x, y)
         pg.display.update()
+        self.dirty = False

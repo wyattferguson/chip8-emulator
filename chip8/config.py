@@ -1,13 +1,14 @@
 from chip8.ctypes import Color
 
-DEFAULT_ROM: str = "./roms/tank.ch8"
+DEFAULT_ROM: str = "./roms/particle.ch8"
 DEFAULT_SCALE: int = 10  # Screen size multiplier
 
-
 MEMORY_SIZE: int = 4096  # 4KB of memory
-REGISTERS_COUNT: int = 16  # 16 general-purpose registers (V0 to VF)
+REGISTER_COUNT: int = 16  # 16 general-purpose registers (V0 to VF)
 TICK_RATE: int = 60  # 60Hz refresh rate
+CPU_CYCLES_PER_TICK: int = 12  # execute enough opcodes each frame to reduce CLS/DRW tear
 PC_INIT = 0x200  # Program counter starts at 0x200 in memory
+MAX_8BIT = 256  # 8-bit value wraparound
 
 # fmt: off
 FONT:list[int] = [

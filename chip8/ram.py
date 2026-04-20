@@ -10,7 +10,6 @@ class RAM:
 
     def __init__(self, rom_path: str) -> None:
         self._memory: bytearray = bytearray([0] * MEMORY_SIZE)
-
         # Load font data into the first 80 bytes of memory
         self._memory[: len(FONT)] = FONT
         self.load_rom(rom_path)

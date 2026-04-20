@@ -65,7 +65,7 @@ def test_flip_pixel_wraps_and_reports_erasure() -> None:
 def test_clear_resets_entire_buffer_and_flips_display(
     patch_screen_pygame: dict[str, object],
 ) -> None:
-    # Restore all pixels to the cleared state.
+    # Restore all pixels to the cleared state without forcing an immediate refresh.
     screen = Screen(1)
     screen.buffer[0][0] = 1
     screen.buffer[5][5] = 1
@@ -74,7 +74,7 @@ def test_clear_resets_entire_buffer_and_flips_display(
     screen.clear()
 
     assert all(pixel == 0 for row in screen.buffer for pixel in row)
-    assert int(patch_screen_pygame["update_calls"]) == update_calls + 1
+    assert int(patch_screen_pygame["update_calls"]) == update_calls
 
 
 def test_update_draws_full_frame_and_refreshes_display(
@@ -96,3 +96,18 @@ def test_update_draws_full_frame_and_refreshes_display(
     assert new_rect_calls[0][2] == [0, 0, PIXEL_WIDTH * 2, PIXEL_HEIGHT * 2]
     assert new_rect_calls[1][1] == BLACK
     assert int(patch_screen_pygame["update_calls"]) == update_calls_before + 1
+
+
+def test_update_skips_when_not_dirty(
+    patch_screen_pygame: dict[str, object],
+) -> None:
+    # Avoid redundant full-frame redraw when buffer is unchanged.
+    screen = Screen(1)
+    screen.update()  # consume initial dirty frame
+    rect_calls_before = len(patch_screen_pygame["rect_calls"])
+    update_calls_before = int(patch_screen_pygame["update_calls"])
+
+    screen.update()
+
+    assert len(patch_screen_pygame["rect_calls"]) == rect_calls_before
+    assert int(patch_screen_pygame["update_calls"]) == update_calls_before

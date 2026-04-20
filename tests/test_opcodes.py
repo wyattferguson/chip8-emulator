@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from chip8.config import PC_INIT, REGISTERS_COUNT
+from chip8.config import PC_INIT, REGISTER_COUNT
 from chip8.cpu import CPU
 from chip8.keypad import Keypad
 from chip8.opcodes import opcodes
@@ -39,14 +39,14 @@ class DummyKeypad(Keypad):
 
     def __init__(self) -> None:
         """Initialize the keypad test double."""
-        self.pressed_keys = [0] * REGISTERS_COUNT
+        self.pressed_keys = [0] * REGISTER_COUNT
 
 
 @pytest.fixture
 def cpu(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> CPU:
     """Create a CPU instance for opcode-level tests."""
     # Reset class-level CPU state before each instance is created.
-    monkeypatch.setattr(CPU, "v", bytearray([0] * REGISTERS_COUNT))
+    monkeypatch.setattr(CPU, "v", bytearray([0] * REGISTER_COUNT))
     monkeypatch.setattr(CPU, "i", 0)
     monkeypatch.setattr(CPU, "x", 0)
     monkeypatch.setattr(CPU, "y", 0)

@@ -1,7 +1,6 @@
 import pygame as pg
-from click.decorators import R
 
-from chip8.config import DEFAULT_ROM, DEFAULT_SCALE
+from chip8.config import DEFAULT_ROM, DEFAULT_SCALE, TICK_RATE
 from chip8.cpu import CPU
 from chip8.keypad import Keypad
 from chip8.ram import RAM
@@ -34,4 +33,4 @@ class Chip8:
             self.keypad.update()
             self.cpu.cycle()
             self.screen.update()
-            self.clock.tick(60)  # Limit to 60 FPS
+            self.clock.tick(TICK_RATE)  # Limit to display tick rate
