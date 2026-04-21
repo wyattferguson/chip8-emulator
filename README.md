@@ -1,8 +1,8 @@
 ![chip8pong](https://i.imgur.com/MdyWkCT.png)
 
-# :robot: Chip-8 Emulator
+# :robot: Chip-8 Emulator in Python
 
-This is my Chip-8 emulator I built in Python. Created in 1977, CHIP-8 is the original fantasy console. Initially designed to ease game development for the COSMAC VIP kit computer. I built this as a learning project to learn the basics of emulation. A few notes:
+This is my Chip-8 emulator I built in Python. Created in 1977, CHIP-8 is the original fantasy console. Initially designed to ease game development for the COSMAC VIP kit computer. I built this as a learning project to get the basics of emulation. A few notes:
 
 - All 34 instructions are here +1 from the extended set.
 - Some ROMS for testing have been included in the `/roms/` folder.
@@ -47,20 +47,7 @@ task format
 
 # run full battery of pytests
 task tests
-
 ```
-
-## Chip8 Specifications
-
-- Memory: CHIP-8 has direct access to up to 4 kilobytes of RAM
-- Display: 64 x 32 pixels (or 128 x 64 for SUPER-CHIP) monochrome, ie. black or white
-- A program counter, often called just “PC”, which points at the current instruction in memory
-- One 16-bit index register called “I” which is used to point at locations in memory
-- A stack for 16-bit addresses, which is used to call subroutines/functions and return from them
-- An 8-bit delay timer which is decremented at a rate of 60 Hz (60 times per second) until it reaches 0
-- An 8-bit sound timer which functions like the delay timer, but which also gives off a beeping sound as long as it’s not 0
-- 16 8-bit (one byte) general-purpose variable registers numbered 0 through F hexadecimal, ie. 0 through 15 in decimal, called V0 through VF
-- VF is also used as a flag register; many instructions will set it to either 1 or 0 based on some rule, for example using it as a carry flag
 
 ## Controls
 
@@ -71,6 +58,8 @@ For CHIP-8 emulators that run on modern PCs, it’s customary to use the left si
           4 5 6 D               Q W E R
           7 8 9 E               A S D F
           A 0 B F               Z X C V
+
+                                Press ESC to Quit.
 ```
 
 ## References

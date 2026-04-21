@@ -1,21 +1,20 @@
 import random
-from collections.abc import Callable
-from operator import and_, or_, xor
 
 from chip8._exceptions import DecodeError, ExecuteError
 from chip8.audio import Audio
-from chip8.constants import CARRY_FLAG, CPU_CYCLES_PER_TICK, MAX_8BIT, PC_INIT, REGISTER_COUNT
+from chip8.constants import (
+    BITWISE_OPERATORS,
+    CARRY_FLAG,
+    CPU_CYCLES_PER_TICK,
+    MAX_8BIT,
+    PC_INIT,
+    REGISTER_COUNT,
+)
 from chip8.ctypes import OpCode
 from chip8.keypad import Keypad
 from chip8.opcodes import opcodes
 from chip8.ram import RAM
 from chip8.screen import Screen
-
-BITWISE_OPERATORS: dict[str, Callable[[int, int], int]] = {
-    "|": or_,
-    "&": and_,
-    "^": xor,
-}
 
 
 class CPU:
@@ -59,10 +58,7 @@ class CPU:
     def execute(self) -> None:
         """Execute current opcode."""
         try:
-            if self.opcode.args is None:
-                getattr(self, self.opcode.call)()
-            else:
-                getattr(self, self.opcode.call)(*self.opcode.args)
+            getattr(self, self.opcode.call)(*self.opcode.args)
         except Exception as e:
             raise ExecuteError(
                 f"Execution Error: {self.opcode} - {e}",

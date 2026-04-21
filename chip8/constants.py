@@ -1,3 +1,6 @@
+from collections.abc import Callable
+from operator import and_, or_, xor
+
 MEMORY_SIZE: int = 4096  # 4KB of memory
 REGISTER_COUNT: int = 16  # 16 general-purpose registers (V0 to VF)
 TICK_RATE: int = 60  # 60Hz refresh rate
@@ -32,3 +35,9 @@ FONT:list[int] = [
             0xF0, 0x80, 0xF0, 0x80, 0x80,   # F
         ]
 # fmt: on
+
+BITWISE_OPERATORS: dict[str, Callable[[int, int], int]] = {
+    "|": or_,
+    "&": and_,
+    "^": xor,
+}
