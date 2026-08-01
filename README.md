@@ -1,7 +1,8 @@
-![chip8pong](https://i.imgur.com/MdyWkCT.png)
+<div align="center">
+![chip8pong](https://i.imgur.com/MdyWkCT.png)<br>
 
 # :robot: Chip-8 Emulator in Python
-
+</div>
 This is my Chip-8 emulator I built in Python. Created in 1977, CHIP-8 is the original fantasy console. Initially designed to ease game development for the COSMAC VIP kit computer. I built this as a learning project to get the basics of emulation. A few notes:
 
 - All 34 instructions are here +1 from the extended set.
