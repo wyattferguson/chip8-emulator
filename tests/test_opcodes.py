@@ -234,6 +234,23 @@ def test_8xy6_shr_vx(cpu: CPU) -> None:
     assert cpu.v[0xF] == 1
 
 
+def test_8xy5_sub_vx_vy_keeps_flag_when_vx_is_vf(cpu: CPU) -> None:
+    """Subtract into VF and keep the not-borrow flag, not the difference."""
+    # Verify VF ends up holding the flag when it is also the target register.
+    cpu.v[0xF] = 9
+    cpu.v[0xB] = 4
+    run_instruction(cpu, 0x8FB5)
+    assert cpu.v[0xF] == 1
+
+
+def test_8xye_shl_vx_keeps_flag_when_vx_is_vf(cpu: CPU) -> None:
+    """Shift VF left and keep the carried-out bit, not the shifted value."""
+    # Verify VF ends up holding the flag when it is also the target register.
+    cpu.v[0xF] = 0x81
+    run_instruction(cpu, 0x8FFE)
+    assert cpu.v[0xF] == 1
+
+
 def test_8xy7_subn_vx_vy(cpu: CPU) -> None:
     """Set Vx to Vy - Vx and set not-borrow flag."""
     # Verify equal registers keep VF set.
@@ -340,8 +357,8 @@ def test_fx07_ld_vx_dt(cpu: CPU) -> None:
 
 
 def test_fx0a_wait(cpu: CPU) -> None:
-    """Wait for a key press and store key index in Vx."""
-    # Verify no-key keeps PC steady and pressed key stores index.
+    """Wait for a key press and release, then store key index in Vx."""
+    # Verify no-key and held-key keep PC steady, and the release stores the index.
     keypad = cpu.keypad
     assert isinstance(keypad, DummyKeypad)
 
@@ -350,8 +367,25 @@ def test_fx0a_wait(cpu: CPU) -> None:
 
     keypad.pressed_keys[0xC] = 1
     run_instruction(cpu, 0xFA0A)
+    assert cpu.pc == PC_INIT
+    assert cpu.v[0xA] == 0
+
+    keypad.pressed_keys[0xC] = 0
+    run_instruction(cpu, 0xFA0A)
     assert cpu.v[0xA] == 0xC
     assert cpu.pc == PC_INIT + 2
+
+
+def test_fx0a_wait_ignores_key_held_since_before(cpu: CPU) -> None:
+    """A key already down when the wait starts counts once it is released."""
+    # Verify the wait does not end while the key stays down.
+    keypad = cpu.keypad
+    assert isinstance(keypad, DummyKeypad)
+    keypad.pressed_keys[0x5] = 1
+
+    for _ in range(3):
+        run_instruction(cpu, 0xFA0A)
+    assert cpu.pc == PC_INIT
 
 
 def test_fx15_ld_dt_vx(cpu: CPU) -> None:
