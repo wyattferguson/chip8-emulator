@@ -156,18 +156,21 @@ class CPU:
 
     def _store_vx_result(self, value: int) -> None:
         """Store value in Vx and update VF."""
-        self.v[CARRY_FLAG] = value >= 0
+        carry = value >= 0
         self.v[self.x] = value % MAX_8BIT
+        self.v[CARRY_FLAG] = carry
 
     def shr_vx(self) -> None:
         """Set Vx = Vx SHR 1."""
-        self.v[CARRY_FLAG] = self.v[self.x] & 0x1
+        carry = self.v[self.x] & 0x1
         self.v[self.x] >>= 1
+        self.v[CARRY_FLAG] = carry
 
     def shl_vx(self) -> None:
         """Set Vx = Vx SHL 1."""
-        self.v[CARRY_FLAG] = (self.v[self.x] & 0x80) >> 7
+        carry = (self.v[self.x] & 0x80) >> 7
         self.v[self.x] = (self.v[self.x] << 1) % MAX_8BIT
+        self.v[CARRY_FLAG] = carry
 
     def sne_vx_vy(self) -> None:
         """Skip next instruction if Vx != Vy."""
