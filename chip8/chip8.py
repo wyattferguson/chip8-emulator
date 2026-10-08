@@ -33,7 +33,6 @@ class Chip8:
         """Run the emulator."""
         while True:
             self.keypad.update()
-            self.cpu.cycle()
-            self.audio.update()
+            self.cpu.cycle()  # also steps the sound timer, so audio is not updated again here
             self.screen.update()
             self.clock.tick(TICK_RATE)  # Limit to display tick rate

@@ -39,6 +39,7 @@ class CPU:
 
         self.stack: list[int] = []  # Store return addresses when subroutines are called
         self.delay_timer: int = 0
+        self.wait_key: int | None = None  # key seen going down while FX0A waits for its release
 
         self.pc: int = PC_INIT  # program counter, starts at 0x200 in ram
 
@@ -156,18 +157,21 @@ class CPU:
 
     def _store_vx_result(self, value: int) -> None:
         """Store value in Vx and update VF."""
-        self.v[CARRY_FLAG] = value >= 0
+        # VF is written last so the flag survives when Vx is VF itself
         self.v[self.x] = value % MAX_8BIT
+        self.v[CARRY_FLAG] = value >= 0
 
     def shr_vx(self) -> None:
         """Set Vx = Vx SHR 1."""
-        self.v[CARRY_FLAG] = self.v[self.x] & 0x1
+        lsb = self.v[self.x] & 0x1
         self.v[self.x] >>= 1
+        self.v[CARRY_FLAG] = lsb
 
     def shl_vx(self) -> None:
         """Set Vx = Vx SHL 1."""
-        self.v[CARRY_FLAG] = (self.v[self.x] & 0x80) >> 7
+        msb = (self.v[self.x] & 0x80) >> 7
         self.v[self.x] = (self.v[self.x] << 1) % MAX_8BIT
+        self.v[CARRY_FLAG] = msb
 
     def sne_vx_vy(self) -> None:
         """Skip next instruction if Vx != Vy."""
@@ -203,12 +207,20 @@ class CPU:
             self.pc += self.opcode.length
 
     def wait(self) -> None:
-        """Wait for a key press, store the value of the key in Vx."""
-        if not any(self.keypad.pressed_keys):
+        """Wait for a key to be pressed and released, store the value of the key in Vx."""
+        # The original hardware moves on when the key comes back up, not when it goes down
+        if self.wait_key is None:
+            if any(self.keypad.pressed_keys):
+                self.wait_key = self.keypad.pressed_keys.index(1)
             self.pc -= self.opcode.length  # rewind program counter to repeat this instruction
             return
 
-        self.v[self.x] = self.keypad.pressed_keys.index(True)
+        if self.keypad.pressed_keys[self.wait_key]:
+            self.pc -= self.opcode.length
+            return
+
+        self.v[self.x] = self.wait_key
+        self.wait_key = None
 
     def load_dt_vx(self) -> None:
         """Set delay timer = Vx."""
